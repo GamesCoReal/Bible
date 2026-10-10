@@ -1,25 +1,25 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-
-  <title>Bible — YLT & WEB</title>
+  <title>Bible — YLT &amp; WEB</title>
 
   <style>
     :root {
       --background: #ffffff;
       --text: #151515;
       --muted: #777777;
-      --line: #999999;
+      --line: #888888;
     }
 
     body.dark {
       --background: #000000;
       --text: #f5f5f5;
       --muted: #999999;
-      --line: #666666;
+      --line: #777777;
     }
 
     * {
@@ -31,113 +31,113 @@
       background: var(--background);
       color: var(--text);
       font-family: Georgia, "Times New Roman", serif;
-      font-size: 18px;
-      line-height: 1.2;
-      transition: background 0.15s, color 0.15s;
+      font-size: 11px;
+      line-height: 1.15;
     }
 
     #reader {
       width: 100%;
-      max-width: 1000px;
+      max-width: 850px;
       margin: 0 auto;
-      padding: 18px;
+      padding: 6px;
     }
 
     .verse {
-      margin: 0 0 5mm;
+      margin: 0 0 2mm;
     }
 
     .reference {
       color: var(--muted);
       font-family: Arial, sans-serif;
-      font-size: 12px;
-      margin-bottom: 2mm;
+      font-size: 8px;
+      line-height: 1.1;
+      margin: 0 0 0.5mm;
     }
 
     .sentence {
       margin: 0;
       padding: 0;
-      line-height: 1.2;
+      font-size: 11px;
+      line-height: 1.15;
       overflow-wrap: anywhere;
     }
 
-    /* Matching sentences appear only once. */
+    /* Identical sentences are shown once. */
     .same {
-      margin: 0 0 2mm;
+      margin: 0 0 0.5mm;
     }
 
     /*
-      Different sentences share a central reference line.
-      YLT is above the line and shifted +2mm on X.
-      WEB is below the line and shifted -2mm on X.
+      Differing translations are kept close together.
+      YLT: above, shifted right by 2 mm.
+      WEB: below, shifted left by 2 mm.
     */
     .comparison {
       position: relative;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr);
-      row-gap: 2mm;
-      margin: 0 0 2mm;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin: 0 0 0.5mm;
       padding: 0;
-    }
-
-    .ylt {
-      grid-row: 1;
-      transform: translateX(2mm);
-      width: calc(100% - 2mm);
-      justify-self: start;
-    }
-
-    .web {
-      grid-row: 2;
-      transform: translateX(-2mm);
-      width: calc(100% - 2mm);
-      justify-self: end;
-    }
-
-    /*
-      Center reference connector:
-      top path goes right, up, then right;
-      bottom path mirrors it downward.
-      It is decorative and does not block text.
-    */
-    .connector {
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      overflow: visible;
-      z-index: 0;
-    }
-
-    .connector path {
-      fill: none;
-      stroke: var(--line);
-      stroke-width: 0.8;
-      stroke-linecap: round;
-      stroke-linejoin: round;
     }
 
     .ylt,
     .web {
       position: relative;
-      z-index: 1;
+      width: calc(100% - 2mm);
+      margin: 0;
+      padding: 0;
+    }
+
+    .ylt {
+      align-self: flex-start;
+      transform: translateX(2mm);
+    }
+
+    .web {
+      align-self: flex-end;
+      transform: translateX(-2mm);
+    }
+
+    /*
+      Rounded curved arrow connecting the translations.
+      It is decorative, not interactive.
+    */
+    .connector {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      width: 30px;
+      height: 40px;
+      transform: translateY(-50%);
+      overflow: visible;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .connector path {
+      fill: none;
+      stroke: var(--line);
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
     .error {
-      font-family: Arial, sans-serif;
       color: #d33;
+      font-family: Arial, sans-serif;
+      font-size: 12px;
       white-space: pre-wrap;
     }
 
     @media (max-width: 500px) {
       #reader {
-        padding: 12px;
+        padding: 5px;
       }
 
-      body {
-        font-size: 17px;
+      body,
+      .sentence {
+        font-size: 11px;
       }
     }
   </style>
@@ -151,14 +151,15 @@
 
     const reader = document.getElementById("reader");
 
-    // Set this to "dark" for a black background on startup.
+    // Change to "dark" for a black background by default.
     const DEFAULT_THEME = "light";
 
     if (DEFAULT_THEME === "dark") {
       document.body.classList.add("dark");
     }
 
-    // Read the tab-separated Bible files.
+    // Parse lines formatted as:
+    // Genesis 1:1<TAB>Bible verse text
     async function loadBibleFile(filename) {
       const response = await fetch(filename);
 
@@ -177,16 +178,13 @@
         if (!match) continue;
 
         const [, book, chapterVerse, text] = match;
-        const reference = `${book} ${chapterVerse}`;
-
-        verses.set(reference, text.trim());
+        verses.set(`${book} ${chapterVerse}`, text.trim());
       }
 
       return verses;
     }
 
-    // Normalize punctuation so punctuation differences alone
-    // do not make otherwise identical sentences count as different.
+    // Ignore punctuation and capitalization when comparing sentences.
     function normalize(text) {
       return text
         .normalize("NFC")
@@ -199,10 +197,7 @@
         .toLowerCase();
     }
 
-    /*
-      Split at sentence-ending punctuation.
-      Commas and semicolons do not split a sentence.
-    */
+    // Split at sentence-ending punctuation, not commas or semicolons.
     function splitSentences(text) {
       const matches = text.match(
         /[^.!?]+(?:[.!?]+["'’”)]*)*|[.!?]+/g
@@ -227,9 +222,45 @@
       return element;
     }
 
+    // Create a smooth, rounded arrow.
+    function makeConnector() {
+      const svg = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "svg"
+      );
+
+      svg.setAttribute("class", "connector");
+      svg.setAttribute("viewBox", "0 0 30 40");
+      svg.setAttribute("aria-hidden", "true");
+
+      // The connector travels right, curves upward, then turns right.
+      const path = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "path"
+      );
+
+      path.setAttribute(
+        "d",
+        "M2 30 H8 Q13 30 13 25 V15 Q13 10 18 10 H25"
+      );
+
+      // Arrowhead.
+      const arrowhead = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "path"
+      );
+
+      arrowhead.setAttribute("d", "M21 6 L26 10 L21 14");
+
+      svg.append(path, arrowhead);
+
+      return svg;
+    }
+
     /*
-      Find shared sentences in both translations, preserving order.
-      Matching sentences appear once. Unmatched runs are paired.
+      Align sentences in order using the longest common subsequence.
+      Matching sentences are displayed once.
+      Unmatched sentences are displayed as a YLT/WEB pair.
     */
     function alignSentences(yltText, webText) {
       const ylt = splitSentences(yltText);
@@ -243,7 +274,6 @@
         () => Array(b.length + 1).fill(0)
       );
 
-      // Longest common subsequence table.
       for (let i = a.length - 1; i >= 0; i--) {
         for (let j = b.length - 1; j >= 0; j--) {
           if (a[i] === b[j]) {
@@ -276,7 +306,6 @@
         const startI = i;
         const startJ = j;
 
-        // Collect unmatched sentences until a shared sentence is found.
         while (
           i < a.length &&
           j < b.length &&
@@ -301,7 +330,7 @@
         }
       }
 
-      // Include remaining sentences if one translation has extra text.
+      // Handle any remaining sentences in either translation.
       if (i < a.length || j < b.length) {
         result.push({
           type: "different",
@@ -313,39 +342,6 @@
       return result;
     }
 
-    // Draw the mirrored right-angle connector.
-    function makeConnector() {
-      const svg = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "svg"
-      );
-
-      svg.setAttribute("class", "connector");
-      svg.setAttribute("viewBox", "0 0 100 100");
-      svg.setAttribute("preserveAspectRatio", "none");
-      svg.setAttribute("aria-hidden", "true");
-
-      const upper = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "path"
-      );
-
-      // Right → up → right.
-      upper.setAttribute("d", "M0 35 H5 V20 H10");
-
-      const lower = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "path"
-      );
-
-      // Mirrored: right → down → right.
-      lower.setAttribute("d", "M0 65 H5 V80 H10");
-
-      svg.append(upper, lower);
-
-      return svg;
-    }
-
     function renderVerse(reference, yltText, webText) {
       const verse = makeElement("section", "verse");
 
@@ -353,20 +349,16 @@
         makeElement("div", "reference", reference)
       );
 
-      // If a reference is present in only one file, show what exists.
+      // If one file lacks this verse, show the available text.
       if (yltText === undefined || webText === undefined) {
-        const availableText = yltText ?? webText ?? "";
-
         verse.appendChild(
-          makeElement("p", "sentence same", availableText)
+          makeElement("p", "sentence same", yltText ?? webText ?? "")
         );
 
         return verse;
       }
 
-      const aligned = alignSentences(yltText, webText);
-
-      for (const item of aligned) {
+      for (const item of alignSentences(yltText, webText)) {
         if (item.type === "same") {
           verse.appendChild(
             makeElement("p", "sentence same", item.text)
@@ -376,6 +368,7 @@
         }
 
         const comparison = makeElement("div", "comparison");
+
         comparison.appendChild(makeConnector());
 
         if (item.ylt) {
@@ -403,7 +396,6 @@
           loadBibleFile("./WEB.txt")
         ]);
 
-        // Keep the original order from YLT, then add WEB-only references.
         const references = [
           ...new Set([...ylt.keys(), ...web.keys()])
         ];
