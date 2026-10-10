@@ -12,15 +12,21 @@
   --muted: #777777;
   --ylt-color: #202020;
   --web-color: #202020;
+  --border: #dddddd;
+  --ylt-underline: #4386d6;
+  --web-underline: #d08a42;
   --connector: #888888;
 }
 
 body.dark {
   --background: #000000;
   --text: #eeeeee;
-  --muted: #888888;
+  --muted: #999999;
   --ylt-color: #eeeeee;
   --web-color: #eeeeee;
+  --border: #333333;
+  --ylt-underline: #77b5ff;
+  --web-underline: #efb36e;
   --connector: #777777;
 }
 
@@ -39,9 +45,11 @@ body {
   color: var(--text);
   font-family: Georgia, "Times New Roman", serif;
   font-size: 9px;
-  line-height: 1.35;
+  line-height: 1.4;
   transition: background 0.15s, color 0.15s;
 }
+
+/* Toolbar */
 
 .toolbar {
   position: sticky;
@@ -49,154 +57,194 @@ body {
   z-index: 10;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 6px 0;
+  gap: 6px;
+  padding: 7px 0;
   margin-bottom: 8px;
   background: var(--background);
-  border-bottom: 1px solid var(--muted);
+  border-bottom: 1px solid var(--border);
   font-family: Arial, sans-serif;
 }
 
+.toolbar strong {
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.toolbar input,
 .toolbar button,
-.toolbar select,
-.toolbar input {
+.toolbar select {
   min-width: 0;
-  padding: 5px;
+  padding: 6px;
   font-size: 11px;
   color: var(--text);
   background: var(--background);
-  border: 1px solid var(--muted);
+  border: 1px solid var(--border);
   border-radius: 5px;
 }
 
 .toolbar input {
   flex: 1;
+  width: 100%;
+}
+
+#status,
+#message {
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  color: var(--muted);
 }
 
 #status {
-  color: var(--muted);
-  font-family: Arial, sans-serif;
-  font-size: 10px;
   margin-bottom: 8px;
 }
 
-#bible {
-  overflow-wrap: anywhere;
-  white-space: normal;
+#message {
+  margin-top: 16px;
 }
 
-/* Chapter headings stay compact. */
+/* Bible text */
+
+#bible {
+  font-size: 9px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+/* Chapter heading */
+
 .chapter {
   display: inline;
+  font-size: 10px;
   font-weight: bold;
-  font-size: 1.15em;
+  line-height: inherit;
+  margin-right: 3px;
+}
+
+/* Verse references */
+
+.reference {
+  display: inline;
+  font-size: 7px;
+  line-height: inherit;
+  vertical-align: super;
+  color: var(--muted);
+  white-space: nowrap;
   margin-right: 2px;
 }
 
-/* Small reference, similar to a superscript Bible reference. */
-.reference {
-  display: inline;
-  font-size: 0.72em;
-  vertical-align: super;
-  color: var(--muted);
-  margin-right: 1px;
-  white-space: nowrap;
-}
-
-/* A matching sentence is shown once. */
-.same {
-  color: var(--text);
-}
-
 /*
-  Each comparison is one inline unit.
-  The top and bottom lines belong to the same unit, so following text
-  flows after the bottom line instead of between the two translations.
+  Every differing sentence is a single inline unit.
+  Its two rows remain together in the text flow.
 */
+
 .comparison {
-  display: inline-block;
-  position: relative;
+  display: inline-grid;
+  grid-template-columns: minmax(0, max-content);
+  grid-auto-rows: auto;
   vertical-align: baseline;
   max-width: 100%;
-  margin: 0 1px;
-  overflow: visible;
-  line-height: 1;
+  margin: 0 2px;
+  line-height: 1.4;
+  position: relative;
 }
+
+/* Both translation lines use identical sizing */
 
 .version {
   display: block;
-  position: relative;
-  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  font-family: Georgia, "Times New Roman", serif;
   font-size: 9px;
-  line-height: 2mm;
+  font-weight: normal;
+  line-height: 1.4;
   overflow-wrap: anywhere;
+  word-break: normal;
 }
+
+/* YLT is on top */
 
 .ylt {
   color: var(--ylt-color);
   text-decoration-line: underline;
   text-decoration-style: dotted;
-  text-decoration-color: #4386d6;
+  text-decoration-color: var(--ylt-underline);
   text-underline-offset: 1px;
   transform: translateX(0.7mm);
 }
+
+/* WEB is directly below YLT */
 
 .web {
   color: var(--web-color);
   text-decoration-line: underline;
   text-decoration-style: dotted;
-  text-decoration-color: #d08a42;
+  text-decoration-color: var(--web-underline);
   text-underline-offset: 1px;
   transform: translateX(-0.7mm);
 }
 
-/* Small curved connector indicating that the lines are a pair. */
+/* Connector */
+
 .connector {
   position: absolute;
   left: -3px;
   top: 50%;
   width: 4px;
-  height: 2mm;
+  height: 4px;
   border-left: 1px solid var(--connector);
   border-bottom: 1px solid var(--connector);
   border-bottom-left-radius: 3px;
+  opacity: 0.7;
   pointer-events: none;
-  opacity: 0.75;
 }
 
-#message {
-  margin-top: 20px;
-  font-family: Arial, sans-serif;
-  font-size: 12px;
-  color: var(--muted);
+/* Text size controls */
+
+body.text-large {
+  font-size: 1.75em;
+}
+
+body.text-large #bible {
+  font-size: 15.75px;
+  line-height: 1.4;
+}
+
+body.text-large .version {
+  font-size: 15.75px;
+  line-height: 1.4;
+}
+
+body.text-large .chapter {
+  font-size: 17.5px;
+}
+
+body.text-large .reference {
+  font-size: 12.25px;
 }
 
 /* Search results */
+
 mark {
   background: #ffe68a;
   color: #111111;
 }
 
-/* Keep controls usable on small screens. */
+/* Mobile layout */
+
 @media (max-width: 480px) {
   body {
     padding: 7px;
-    font-size: 9px;
-  }
-
-  .version {
-    font-size: 9px;
-    line-height: 2mm;
   }
 
   .toolbar {
     gap: 4px;
   }
 
-  .toolbar button,
-  .toolbar select {
-    padding: 4px;
+  .toolbar input,
+  .toolbar button {
+    padding: 5px;
   }
 }
 </style>
@@ -210,11 +258,12 @@ mark {
   <input
     id="search"
     type="search"
-    placeholder="Find a verse (e.g. Genesis 1:2)"
-    aria-label="Search Bible"
+    placeholder="Find verse: Genesis 1:2"
+    aria-label="Search for a Bible verse"
   >
 
   <button id="themeButton" type="button">Dark</button>
+  <button id="sizeButton" type="button">1.75×</button>
 </div>
 
 <div id="status">Loading Bible files…</div>
@@ -224,30 +273,20 @@ mark {
 <script>
 "use strict";
 
-/*
-  Files expected beside this index.html:
-    YLT.txt
-    WEB.txt
-
-  Expected line format:
-    Genesis 1:1    In the beginning...
-*/
-
 const DEFAULT_THEME = "light";
 
-const bible = document.getElementById("bible");
-const status = document.getElementById("status");
-const message = document.getElementById("message");
-const search = document.getElementById("search");
+const bibleElement = document.getElementById("bible");
+const statusElement = document.getElementById("status");
+const messageElement = document.getElementById("message");
+const searchInput = document.getElementById("search");
 const themeButton = document.getElementById("themeButton");
+const sizeButton = document.getElementById("sizeButton");
 
 let yltVerses = new Map();
 let webVerses = new Map();
+let allVerses = [];
 let renderedVerses = [];
-let currentBook = "";
-let currentChapter = "";
 
-/* Book names are converted into compact references. */
 const bookAbbreviations = {
   "Genesis": "G",
   "Exodus": "Ex",
@@ -318,17 +357,12 @@ const bookAbbreviations = {
   "Revelation": "Re"
 };
 
-/*
-  Parse lines such as:
-  Genesis 1:1<TAB>In the beginning...
-*/
 function parseBible(text) {
   const verses = new Map();
   const lines = text.replace(/^\uFEFF/, "").split(/\r?\n/);
 
   for (const rawLine of lines) {
     const line = rawLine.trim();
-
     if (!line) continue;
 
     const match = line.match(
@@ -347,6 +381,7 @@ function parseBible(text) {
     const key = `${book}|${chapter}|${verse}`;
 
     verses.set(key, {
+      key,
       book,
       chapter,
       verse,
@@ -357,10 +392,6 @@ function parseBible(text) {
   return verses;
 }
 
-/*
-  Normalize typographic differences and whitespace before comparing.
-  Punctuation and wording remain significant.
-*/
 function normalizeSentence(text) {
   return text
     .normalize("NFC")
@@ -371,16 +402,14 @@ function normalizeSentence(text) {
     .trim();
 }
 
-/*
-  Split text into sentence-like units while retaining punctuation.
-  This is a lightweight splitter rather than a full language parser.
-*/
 function splitSentences(text) {
   const cleaned = text.replace(/\s+/g, " ").trim();
 
   if (!cleaned) return [];
 
-  const parts = cleaned.match(/[^.!?]+(?:[.!?]+["'”’)\]]*|$)/g);
+  const parts = cleaned.match(
+    /[^.!?]+(?:[.!?]+["'”’)\]]*|$)/g
+  );
 
   return (parts || [cleaned])
     .map(part => part.trim())
@@ -388,8 +417,9 @@ function splitSentences(text) {
 }
 
 /*
-  If the sentence sequences are different, align them in order.
-  Matching sentences are shown once; unmatched sentences show both.
+  Align sentences in order.
+  Matching sentences appear once.
+  Unmatched sentences appear in a YLT/WEB pair.
 */
 function alignSentences(yltText, webText) {
   const ylt = splitSentences(yltText);
@@ -408,19 +438,16 @@ function alignSentences(yltText, webText) {
         type: "same",
         text: ylt[i]
       });
+
       i++;
       j++;
       continue;
     }
 
-    /*
-      Look ahead for the next sentence that matches.
-      This keeps sentences in their original order.
-    */
     let match = null;
 
-    for (let di = 0; di <= 4 && i + di < ylt.length; di++) {
-      for (let dj = 0; dj <= 4 && j + dj < web.length; dj++) {
+    for (let di = 0; di <= 5 && i + di < ylt.length; di++) {
+      for (let dj = 0; dj <= 5 && j + dj < web.length; dj++) {
         if (a[i + di] === b[j + dj]) {
           const distance = di + dj;
 
@@ -445,10 +472,9 @@ function alignSentences(yltText, webText) {
 
     const yltOnly = ylt.slice(i, i + match.di);
     const webOnly = web.slice(j, j + match.dj);
+    const count = Math.max(yltOnly.length, webOnly.length);
 
-    const max = Math.max(yltOnly.length, webOnly.length);
-
-    for (let k = 0; k < max; k++) {
+    for (let k = 0; k < count; k++) {
       rows.push({
         type: "different",
         ylt: yltOnly[k] || "",
@@ -485,85 +511,44 @@ function abbreviateBook(book) {
   return bookAbbreviations[book] || book.slice(0, 3);
 }
 
-function makeReference(verse) {
-  const ref = document.createElement("span");
-  ref.className = "reference";
-  ref.textContent =
-    `${abbreviateBook(verse.book)}${verse.chapter}:${verse.verse}`;
+function makeReference(item) {
+  const reference = document.createElement("span");
+  reference.className = "reference";
+  reference.textContent =
+    `${abbreviateBook(item.book)}${item.chapter}:${item.verse}`;
 
-  ref.title = `${verse.book} ${verse.chapter}:${verse.verse}`;
+  reference.title =
+    `${item.book} ${item.chapter}:${item.verse}`;
 
-  return ref;
+  return reference;
 }
 
 function makeComparison(yltText, webText) {
-  const pair = document.createElement("span");
-  pair.className = "comparison";
+  const comparison = document.createElement("span");
+  comparison.className = "comparison";
 
   if (yltText) {
-    const top = document.createElement("span");
-    top.className = "version ylt";
-    top.textContent = yltText;
-    top.title = "Young's Literal Translation";
-    pair.appendChild(top);
+    const ylt = document.createElement("span");
+    ylt.className = "version ylt";
+    ylt.textContent = yltText;
+    ylt.title = "Young's Literal Translation";
+    comparison.appendChild(ylt);
   }
 
   if (webText) {
-    const bottom = document.createElement("span");
-    bottom.className = "version web";
-    bottom.textContent = webText;
-    bottom.title = "World English Bible";
-    pair.appendChild(bottom);
+    const web = document.createElement("span");
+    web.className = "version web";
+    web.textContent = webText;
+    web.title = "World English Bible";
+    comparison.appendChild(web);
   }
 
   const connector = document.createElement("span");
   connector.className = "connector";
   connector.setAttribute("aria-hidden", "true");
-  pair.appendChild(connector);
+  comparison.appendChild(connector);
 
-  return pair;
-}
-
-function renderBible() {
-  bible.replaceChildren();
-
-  let lastBook = "";
-  let lastChapter = "";
-
-  for (const item of renderedVerses) {
-    const bookChanged = item.book !== lastBook;
-    const chapterChanged =
-      item.book !== lastBook || item.chapter !== lastChapter;
-
-    if (chapterChanged) {
-      if (bible.childNodes.length) {
-        bible.appendChild(document.createTextNode(" "));
-      }
-
-      const heading = document.createElement("span");
-      heading.className = "chapter";
-      heading.textContent =
-        `${item.book} ${item.chapter} `;
-
-      bible.appendChild(heading);
-
-      lastBook = item.book;
-      lastChapter = item.chapter;
-    }
-
-    bible.appendChild(makeReference(item));
-
-    const rows = alignSentences(item.yltText, item.webText);
-
-    for (const row of rows) {
-      if (row.type === "same") {
-        bible.appendChild(document.createTextNode(row.text + " "));
-      } else {
-        bible.appendChild(makeComparison(row.ylt, row.web));
-        bible.appendChild(document.createTextNode(" "));
-      }
-    }
-  }
+  return comparison;
 }
 
 function buildVerseList() {
@@ -572,7 +557,7 @@ function buildVerseList() {
     ...webVerses.keys()
   ]);
 
-  const all = [];
+  const verses = [];
 
   for (const key of keys) {
     const ylt = yltVerses.get(key);
@@ -581,7 +566,7 @@ function buildVerseList() {
 
     if (!source) continue;
 
-    all.push({
+    verses.push({
       key,
       book: source.book,
       chapter: source.chapter,
@@ -591,87 +576,161 @@ function buildVerseList() {
     });
   }
 
-  all.sort((a, b) => {
+  verses.sort((a, b) => {
     if (a.book !== b.book) {
       return a.key.localeCompare(b.key, undefined, {
         numeric: true
       });
     }
 
-    if (a.chapter !== b.chapter) return a.chapter - b.chapter;
+    if (a.chapter !== b.chapter) {
+      return a.chapter - b.chapter;
+    }
+
     return a.verse - b.verse;
   });
 
-  return all;
+  return verses;
+}
+
+function renderBible() {
+  bibleElement.replaceChildren();
+
+  let lastBook = "";
+  let lastChapter = "";
+
+  for (const item of renderedVerses) {
+    const chapterChanged =
+      item.book !== lastBook ||
+      item.chapter !== lastChapter;
+
+    if (chapterChanged) {
+      if (bibleElement.childNodes.length) {
+        bibleElement.appendChild(
+          document.createTextNode(" ")
+        );
+      }
+
+      const heading = document.createElement("span");
+      heading.className = "chapter";
+      heading.textContent = `${item.book} ${item.chapter}`;
+
+      bibleElement.appendChild(heading);
+      bibleElement.appendChild(
+        document.createTextNode(" ")
+      );
+
+      lastBook = item.book;
+      lastChapter = item.chapter;
+    }
+
+    bibleElement.appendChild(makeReference(item));
+    bibleElement.appendChild(
+      document.createTextNode(" ")
+    );
+
+    const rows = alignSentences(
+      item.yltText,
+      item.webText
+    );
+
+    for (const row of rows) {
+      if (row.type === "same") {
+        bibleElement.appendChild(
+          document.createTextNode(row.text + " ")
+        );
+      } else {
+        bibleElement.appendChild(
+          makeComparison(row.ylt, row.web)
+        );
+
+        bibleElement.appendChild(
+          document.createTextNode(" ")
+        );
+      }
+    }
+  }
 }
 
 function showAll() {
-  renderedVerses = buildVerseList();
+  renderedVerses = allVerses;
   renderBible();
 
-  status.textContent =
-    `${renderedVerses.length.toLocaleString()} verses loaded`;
+  statusElement.textContent =
+    `${allVerses.length.toLocaleString()} verses loaded`;
 
-  message.textContent = "";
+  messageElement.textContent = "";
 }
 
 function searchVerse() {
-  const query = search.value.trim();
+  const query = searchInput.value
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "");
 
   if (!query) {
     showAll();
     return;
   }
 
-  /*
-    Accept full references such as Genesis 1:2,
-    or compact references such as G1:2.
-  */
-  const normalizedQuery = query.toLowerCase().replace(/\s+/g, "");
-
-  const found = buildVerseList().filter(item => {
-    const full = `${item.book}${item.chapter}:${item.verse}`
-      .toLowerCase()
-      .replace(/\s+/g, "");
+  renderedVerses = allVerses.filter(item => {
+    const full =
+      `${item.book}${item.chapter}:${item.verse}`
+        .toLowerCase()
+        .replace(/\s+/g, "");
 
     const compact =
       `${abbreviateBook(item.book)}${item.chapter}:${item.verse}`
         .toLowerCase()
         .replace(/\s+/g, "");
 
-    return full === normalizedQuery || compact === normalizedQuery;
+    return full === query || compact === query;
   });
 
-  renderedVerses = found;
   renderBible();
 
-  status.textContent = found.length
-    ? `Found ${found.length} verse${found.length === 1 ? "" : "s"}`
+  statusElement.textContent = renderedVerses.length
+    ? `Found ${renderedVerses.length} verse(s)`
     : "No matching verse found";
 
-  message.textContent = found.length
+  messageElement.textContent = renderedVerses.length
     ? ""
-    : "Try a reference such as Genesis 1:2 or G1:2.";
+    : "Try Genesis 1:2 or G1:2.";
 }
 
 function setTheme(theme) {
-  document.body.classList.toggle("dark", theme === "dark");
-  themeButton.textContent = theme === "dark" ? "Light" : "Dark";
+  document.body.classList.toggle(
+    "dark",
+    theme === "dark"
+  );
+
+  themeButton.textContent =
+    theme === "dark" ? "Light" : "Dark";
 }
 
 themeButton.addEventListener("click", () => {
-  setTheme(document.body.classList.contains("dark") ? "light" : "dark");
+  const dark = document.body.classList.contains("dark");
+  setTheme(dark ? "light" : "dark");
 });
 
-search.addEventListener("keydown", event => {
-  if (event.key === "Enter") searchVerse();
+sizeButton.addEventListener("click", () => {
+  const large = document.body.classList.toggle("text-large");
+
+  sizeButton.textContent = large ? "1×" : "1.75×";
 });
 
-search.addEventListener("search", () => {
-  if (!search.value.trim()) showAll();
+searchInput.addEventListener("keydown", event => {
+  if (event.key === "Enter") {
+    searchVerse();
+  }
 });
 
-/* Load the two local text files. */
+searchInput.addEventListener("search", () => {
+  if (!searchInput.value.trim()) {
+    showAll();
+  }
+});
+
 async function loadBible() {
   setTheme(DEFAULT_THEME);
 
@@ -682,11 +741,15 @@ async function loadBible() {
     ]);
 
     if (!yltResponse.ok) {
-      throw new Error(`Could not load YLT.txt (${yltResponse.status})`);
+      throw new Error(
+        `Could not load YLT.txt: ${yltResponse.status}`
+      );
     }
 
     if (!webResponse.ok) {
-      throw new Error(`Could not load WEB.txt (${webResponse.status})`);
+      throw new Error(
+        `Could not load WEB.txt: ${webResponse.status}`
+      );
     }
 
     const [yltText, webText] = await Promise.all([
@@ -699,15 +762,19 @@ async function loadBible() {
 
     if (!yltVerses.size && !webVerses.size) {
       throw new Error(
-        "No verses were recognized. Check the text-file format."
+        "No verses were recognized. Check the format of the text files."
       );
     }
 
+    allVerses = buildVerseList();
     showAll();
   } catch (error) {
-    status.textContent = "Could not load the Bible files.";
-    message.textContent =
-      `${error.message} Make sure YLT.txt and WEB.txt are beside index.html, then run Live Server in VS Code.`;
+    statusElement.textContent =
+      "Could not load the Bible files.";
+
+    messageElement.textContent =
+      `${error.message} Make sure YLT.txt and WEB.txt are in the same folder as index.html, then run Live Server.`;
+
     console.error(error);
   }
 }
