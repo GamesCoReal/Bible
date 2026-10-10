@@ -7,6 +7,18 @@
 
 <style>
 :root {
+  --background: #000000;
+  --text: #eeeeee;
+  --muted: #999999;
+  --ylt-color: #eeeeee;
+  --web-color: #eeeeee;
+  --border: #383838;
+  --ylt-underline: #77b5ff;
+  --web-underline: #efb36e;
+  --connector: #999999;
+}
+
+body.light {
   --background: #ffffff;
   --text: #171717;
   --muted: #777777;
@@ -16,18 +28,6 @@
   --ylt-underline: #4386d6;
   --web-underline: #d08a42;
   --connector: #888888;
-}
-
-body.dark {
-  --background: #000000;
-  --text: #eeeeee;
-  --muted: #999999;
-  --ylt-color: #eeeeee;
-  --web-color: #eeeeee;
-  --border: #333333;
-  --ylt-underline: #77b5ff;
-  --web-underline: #efb36e;
-  --connector: #777777;
 }
 
 * {
@@ -49,8 +49,6 @@ body {
   transition: background 0.15s, color 0.15s;
 }
 
-/* Toolbar */
-
 .toolbar {
   position: sticky;
   top: 0;
@@ -71,8 +69,7 @@ body {
 }
 
 .toolbar input,
-.toolbar button,
-.toolbar select {
+.toolbar button {
   min-width: 0;
   padding: 6px;
   font-size: 11px;
@@ -102,16 +99,12 @@ body {
   margin-top: 16px;
 }
 
-/* Bible text */
-
 #bible {
   font-size: 9px;
   line-height: 1.4;
   overflow-wrap: anywhere;
   word-break: normal;
 }
-
-/* Chapter heading */
 
 .chapter {
   display: inline;
@@ -120,8 +113,6 @@ body {
   line-height: inherit;
   margin-right: 3px;
 }
-
-/* Verse references */
 
 .reference {
   display: inline;
@@ -133,11 +124,7 @@ body {
   margin-right: 2px;
 }
 
-/*
-  Every differing sentence is a single inline unit.
-  Its two rows remain together in the text flow.
-*/
-
+/* One inline comparison unit, with YLT above WEB. */
 .comparison {
   display: inline-grid;
   grid-template-columns: minmax(0, max-content);
@@ -148,8 +135,6 @@ body {
   line-height: 1.4;
   position: relative;
 }
-
-/* Both translation lines use identical sizing */
 
 .version {
   display: block;
@@ -163,8 +148,6 @@ body {
   word-break: normal;
 }
 
-/* YLT is on top */
-
 .ylt {
   color: var(--ylt-color);
   text-decoration-line: underline;
@@ -174,8 +157,6 @@ body {
   transform: translateX(0.7mm);
 }
 
-/* WEB is directly below YLT */
-
 .web {
   color: var(--web-color);
   text-decoration-line: underline;
@@ -184,8 +165,6 @@ body {
   text-underline-offset: 1px;
   transform: translateX(-0.7mm);
 }
-
-/* Connector */
 
 .connector {
   position: absolute;
@@ -200,12 +179,7 @@ body {
   pointer-events: none;
 }
 
-/* Text size controls */
-
-body.text-large {
-  font-size: 1.75em;
-}
-
+/* 1.75× text size */
 body.text-large #bible {
   font-size: 15.75px;
   line-height: 1.4;
@@ -224,14 +198,10 @@ body.text-large .reference {
   font-size: 12.25px;
 }
 
-/* Search results */
-
 mark {
   background: #ffe68a;
   color: #111111;
 }
-
-/* Mobile layout */
 
 @media (max-width: 480px) {
   body {
@@ -262,7 +232,7 @@ mark {
     aria-label="Search for a Bible verse"
   >
 
-  <button id="themeButton" type="button">Dark</button>
+  <button id="themeButton" type="button">Light</button>
   <button id="sizeButton" type="button">1.75×</button>
 </div>
 
@@ -273,7 +243,7 @@ mark {
 <script>
 "use strict";
 
-const DEFAULT_THEME = "light";
+const DEFAULT_THEME = "dark";
 
 const bibleElement = document.getElementById("bible");
 const statusElement = document.getElementById("status");
@@ -286,6 +256,24 @@ let yltVerses = new Map();
 let webVerses = new Map();
 let allVerses = [];
 let renderedVerses = [];
+
+/* Canonical Bible book order. */
+const bookOrder = [
+  "Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy",
+  "Joshua", "Judges", "Ruth", "1 Samuel", "2 Samuel",
+  "1 Kings", "2 Kings", "1 Chronicles", "2 Chronicles",
+  "Ezra", "Nehemiah", "Esther", "Job", "Psalms", "Psalm",
+  "Proverbs", "Ecclesiastes", "Song of Solomon", "Isaiah",
+  "Jeremiah", "Lamentations", "Ezekiel", "Daniel", "Hosea",
+  "Joel", "Amos", "Obadiah", "Jonah", "Micah", "Nahum",
+  "Habakkuk", "Zephaniah", "Haggai", "Zechariah", "Malachi",
+  "Matthew", "Mark", "Luke", "John", "Acts", "Romans",
+  "1 Corinthians", "2 Corinthians", "Galatians", "Ephesians",
+  "Philippians", "Colossians", "1 Thessalonians",
+  "2 Thessalonians", "1 Timothy", "2 Timothy", "Titus",
+  "Philemon", "Hebrews", "James", "1 Peter", "2 Peter",
+  "1 John", "2 John", "3 John", "Jude", "Revelation"
+];
 
 const bookAbbreviations = {
   "Genesis": "G",
@@ -404,7 +392,6 @@ function normalizeSentence(text) {
 
 function splitSentences(text) {
   const cleaned = text.replace(/\s+/g, " ").trim();
-
   if (!cleaned) return [];
 
   const parts = cleaned.match(
@@ -416,11 +403,6 @@ function splitSentences(text) {
     .filter(Boolean);
 }
 
-/*
-  Align sentences in order.
-  Matching sentences appear once.
-  Unmatched sentences appear in a YLT/WEB pair.
-*/
 function alignSentences(yltText, webText) {
   const ylt = splitSentences(yltText);
   const web = splitSentences(webText);
@@ -434,11 +416,7 @@ function alignSentences(yltText, webText) {
 
   while (i < ylt.length && j < web.length) {
     if (a[i] === b[j]) {
-      rows.push({
-        type: "same",
-        text: ylt[i]
-      });
-
+      rows.push({ type: "same", text: ylt[i] });
       i++;
       j++;
       continue;
@@ -577,17 +555,17 @@ function buildVerseList() {
   }
 
   verses.sort((a, b) => {
-    if (a.book !== b.book) {
-      return a.key.localeCompare(b.key, undefined, {
-        numeric: true
-      });
-    }
+    const aBook = bookOrder.indexOf(a.book);
+    const bBook = bookOrder.indexOf(b.book);
 
-    if (a.chapter !== b.chapter) {
-      return a.chapter - b.chapter;
-    }
+    const aIndex = aBook === -1 ? 999 : aBook;
+    const bIndex = bBook === -1 ? 999 : bBook;
 
-    return a.verse - b.verse;
+    return (
+      aIndex - bIndex ||
+      a.chapter - b.chapter ||
+      a.verse - b.verse
+    );
   });
 
   return verses;
@@ -700,8 +678,8 @@ function searchVerse() {
 
 function setTheme(theme) {
   document.body.classList.toggle(
-    "dark",
-    theme === "dark"
+    "light",
+    theme === "light"
   );
 
   themeButton.textContent =
@@ -709,13 +687,14 @@ function setTheme(theme) {
 }
 
 themeButton.addEventListener("click", () => {
-  const dark = document.body.classList.contains("dark");
-  setTheme(dark ? "light" : "dark");
+  const currentlyLight =
+    document.body.classList.contains("light");
+
+  setTheme(currentlyLight ? "dark" : "light");
 });
 
 sizeButton.addEventListener("click", () => {
   const large = document.body.classList.toggle("text-large");
-
   sizeButton.textContent = large ? "1×" : "1.75×";
 });
 
@@ -762,7 +741,7 @@ async function loadBible() {
 
     if (!yltVerses.size && !webVerses.size) {
       throw new Error(
-        "No verses were recognized. Check the format of the text files."
+        "No verses were recognized. Check the text-file format."
       );
     }
 
@@ -773,7 +752,7 @@ async function loadBible() {
       "Could not load the Bible files.";
 
     messageElement.textContent =
-      `${error.message} Make sure YLT.txt and WEB.txt are in the same folder as index.html, then run Live Server.`;
+      `${error.message} Make sure YLT.txt and WEB.txt are beside index.html, then run Live Server.`;
 
     console.error(error);
   }
