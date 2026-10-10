@@ -10,7 +10,7 @@
   <style>
     :root {
       --background: #ffffff;
-      --text: #151515;
+      --text: #171717;
       --muted: #777777;
       --line: #888888;
     }
@@ -19,7 +19,7 @@
       --background: #000000;
       --text: #f5f5f5;
       --muted: #999999;
-      --line: #777777;
+      --line: #888888;
     }
 
     * {
@@ -32,83 +32,95 @@
       color: var(--text);
       font-family: Georgia, "Times New Roman", serif;
       font-size: 11px;
-      line-height: 1.15;
+      line-height: 1.2;
     }
 
     #reader {
-      width: 100%;
-      max-width: 850px;
+      max-width: 900px;
       margin: 0 auto;
       padding: 6px;
     }
 
+    /* Verses flow continuously instead of each starting a new line. */
     .verse {
-      margin: 0 0 2mm;
+      display: inline;
+      margin: 0;
+      padding: 0;
     }
 
+    /* Small superscript-style reference: G1:2, Ex3:4, etc. */
     .reference {
+      display: inline;
+      position: relative;
+      top: -0.25em;
+      vertical-align: baseline;
       color: var(--muted);
       font-family: Arial, sans-serif;
-      font-size: 8px;
-      line-height: 1.1;
-      margin: 0 0 0.5mm;
+      font-size: 0.72em;
+      white-space: nowrap;
+      margin-right: 2px;
     }
 
     .sentence {
+      display: inline;
       margin: 0;
       padding: 0;
-      font-size: 11px;
-      line-height: 1.15;
+      font-size: inherit;
+      line-height: inherit;
       overflow-wrap: anywhere;
     }
 
-    /* Identical sentences are shown once. */
     .same {
-      margin: 0 0 0.5mm;
+      display: inline;
     }
 
     /*
-      Differing translations are kept close together.
-      YLT: above, shifted right by 2 mm.
-      WEB: below, shifted left by 2 mm.
+      Differing text is shown as two tightly stacked lines.
+      YLT shifts right 2mm; WEB shifts left 2mm.
     */
     .comparison {
+      display: inline-grid;
+      grid-template-columns: minmax(0, 1fr);
+      vertical-align: middle;
       position: relative;
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-      margin: 0 0 0.5mm;
+      margin: 0 1px;
       padding: 0;
+      gap: 0;
+      max-width: 100%;
     }
 
     .ylt,
     .web {
+      display: block;
       position: relative;
-      width: calc(100% - 2mm);
-      margin: 0;
-      padding: 0;
+      font-size: inherit;
+      line-height: 1.15;
+      text-decoration-line: underline;
+      text-decoration-style: dotted;
+      text-decoration-thickness: 0.6px;
+      text-underline-offset: 1px;
+      overflow-wrap: anywhere;
     }
 
     .ylt {
-      align-self: flex-start;
       transform: translateX(2mm);
+      width: calc(100% - 2mm);
+      justify-self: start;
     }
 
     .web {
-      align-self: flex-end;
       transform: translateX(-2mm);
+      width: calc(100% - 2mm);
+      justify-self: end;
     }
 
-    /*
-      Rounded curved arrow connecting the translations.
-      It is decorative, not interactive.
-    */
+    /* Rounded connector arrow between the two translations. */
     .connector {
       position: absolute;
-      left: 0;
+      left: -1px;
       top: 50%;
-      width: 30px;
-      height: 40px;
+      width: 12px;
+      height: 18px;
       transform: translateY(-50%);
       overflow: visible;
       pointer-events: none;
@@ -118,7 +130,7 @@
     .connector path {
       fill: none;
       stroke: var(--line);
-      stroke-width: 1.5;
+      stroke-width: 1;
       stroke-linecap: round;
       stroke-linejoin: round;
     }
@@ -126,19 +138,7 @@
     .error {
       color: #d33;
       font-family: Arial, sans-serif;
-      font-size: 12px;
       white-space: pre-wrap;
-    }
-
-    @media (max-width: 500px) {
-      #reader {
-        padding: 5px;
-      }
-
-      body,
-      .sentence {
-        font-size: 11px;
-      }
     }
   </style>
 </head>
@@ -158,8 +158,87 @@
       document.body.classList.add("dark");
     }
 
-    // Parse lines formatted as:
-    // Genesis 1:1<TAB>Bible verse text
+    const bookAbbreviations = {
+      "Genesis": "G",
+      "Exodus": "Ex",
+      "Leviticus": "Le",
+      "Numbers": "Nu",
+      "Deuteronomy": "De",
+      "Joshua": "Jos",
+      "Judges": "Jdg",
+      "Ruth": "Ru",
+      "1 Samuel": "1Sa",
+      "2 Samuel": "2Sa",
+      "1 Kings": "1Ki",
+      "2 Kings": "2Ki",
+      "1 Chronicles": "1Ch",
+      "2 Chronicles": "2Ch",
+      "Ezra": "Ezr",
+      "Nehemiah": "Ne",
+      "Esther": "Es",
+      "Job": "Job",
+      "Psalms": "Ps",
+      "Psalm": "Ps",
+      "Proverbs": "Pr",
+      "Ecclesiastes": "Ec",
+      "Song of Solomon": "So",
+      "Isaiah": "Isa",
+      "Jeremiah": "Jer",
+      "Lamentations": "La",
+      "Ezekiel": "Eze",
+      "Daniel": "Da",
+      "Hosea": "Ho",
+      "Joel": "Joe",
+      "Amos": "Am",
+      "Obadiah": "Ob",
+      "Jonah": "Jon",
+      "Micah": "Mic",
+      "Nahum": "Na",
+      "Habakkuk": "Hab",
+      "Zephaniah": "Zep",
+      "Haggai": "Hag",
+      "Zechariah": "Zec",
+      "Malachi": "Mal",
+      "Matthew": "Mt",
+      "Mark": "Mk",
+      "Luke": "Lk",
+      "John": "Jn",
+      "Acts": "Ac",
+      "Romans": "Ro",
+      "1 Corinthians": "1Co",
+      "2 Corinthians": "2Co",
+      "Galatians": "Ga",
+      "Ephesians": "Eph",
+      "Philippians": "Php",
+      "Colossians": "Col",
+      "1 Thessalonians": "1Th",
+      "2 Thessalonians": "2Th",
+      "1 Timothy": "1Ti",
+      "2 Timothy": "2Ti",
+      "Titus": "Tit",
+      "Philemon": "Phm",
+      "Hebrews": "Heb",
+      "James": "Jas",
+      "1 Peter": "1Pe",
+      "2 Peter": "2Pe",
+      "1 John": "1Jn",
+      "2 John": "2Jn",
+      "3 John": "3Jn",
+      "Jude": "Jud",
+      "Revelation": "Re"
+    };
+
+    function shortReference(reference) {
+      const match = reference.match(/^(.+?)\s+(\d+):(\d+)$/);
+
+      if (!match) return reference;
+
+      const [, book, chapter, verse] = match;
+      const abbreviation = bookAbbreviations[book] || book;
+
+      return `${abbreviation}${chapter}:${verse}`;
+    }
+
     async function loadBibleFile(filename) {
       const response = await fetch(filename);
 
@@ -184,7 +263,6 @@
       return verses;
     }
 
-    // Ignore punctuation and capitalization when comparing sentences.
     function normalize(text) {
       return text
         .normalize("NFC")
@@ -197,7 +275,7 @@
         .toLowerCase();
     }
 
-    // Split at sentence-ending punctuation, not commas or semicolons.
+    // Split at sentence-ending punctuation, retaining the punctuation.
     function splitSentences(text) {
       const matches = text.match(
         /[^.!?]+(?:[.!?]+["'’”)]*)*|[.!?]+/g
@@ -211,18 +289,12 @@
     function makeElement(tag, className, text) {
       const element = document.createElement(tag);
 
-      if (className) {
-        element.className = className;
-      }
-
-      if (text !== undefined) {
-        element.textContent = text;
-      }
+      if (className) element.className = className;
+      if (text !== undefined) element.textContent = text;
 
       return element;
     }
 
-    // Create a smooth, rounded arrow.
     function makeConnector() {
       const svg = document.createElementNS(
         "http://www.w3.org/2000/svg",
@@ -230,27 +302,23 @@
       );
 
       svg.setAttribute("class", "connector");
-      svg.setAttribute("viewBox", "0 0 30 40");
+      svg.setAttribute("viewBox", "0 0 12 18");
       svg.setAttribute("aria-hidden", "true");
 
-      // The connector travels right, curves upward, then turns right.
       const path = document.createElementNS(
         "http://www.w3.org/2000/svg",
         "path"
       );
 
-      path.setAttribute(
-        "d",
-        "M2 30 H8 Q13 30 13 25 V15 Q13 10 18 10 H25"
-      );
+      // Smooth, rounded turn toward the lower translation.
+      path.setAttribute("d", "M1 1 H3 Q7 1 7 5 V13 Q7 17 11 17");
 
-      // Arrowhead.
       const arrowhead = document.createElementNS(
         "http://www.w3.org/2000/svg",
         "path"
       );
 
-      arrowhead.setAttribute("d", "M21 6 L26 10 L21 14");
+      arrowhead.setAttribute("d", "M8 14 L11 17 L8 18");
 
       svg.append(path, arrowhead);
 
@@ -258,9 +326,8 @@
     }
 
     /*
-      Align sentences in order using the longest common subsequence.
-      Matching sentences are displayed once.
-      Unmatched sentences are displayed as a YLT/WEB pair.
+      Identify identical sentences in order. Matching sentences are
+      displayed once; unmatched sentences are displayed as a pair.
     */
     function alignSentences(yltText, webText) {
       const ylt = splitSentences(yltText);
@@ -276,14 +343,9 @@
 
       for (let i = a.length - 1; i >= 0; i--) {
         for (let j = b.length - 1; j >= 0; j--) {
-          if (a[i] === b[j]) {
-            dp[i][j] = 1 + dp[i + 1][j + 1];
-          } else {
-            dp[i][j] = Math.max(
-              dp[i + 1][j],
-              dp[i][j + 1]
-            );
-          }
+          dp[i][j] = a[i] === b[j]
+            ? 1 + dp[i + 1][j + 1]
+            : Math.max(dp[i + 1][j], dp[i][j + 1]);
         }
       }
 
@@ -330,7 +392,6 @@
         }
       }
 
-      // Handle any remaining sentences in either translation.
       if (i < a.length || j < b.length) {
         result.push({
           type: "different",
@@ -343,47 +404,48 @@
     }
 
     function renderVerse(reference, yltText, webText) {
-      const verse = makeElement("section", "verse");
+      const verse = makeElement("span", "verse");
 
       verse.appendChild(
-        makeElement("div", "reference", reference)
+        makeElement("sub", "reference", shortReference(reference))
       );
 
-      // If one file lacks this verse, show the available text.
       if (yltText === undefined || webText === undefined) {
         verse.appendChild(
-          makeElement("p", "sentence same", yltText ?? webText ?? "")
+          makeElement("span", "sentence same", yltText ?? webText ?? "")
         );
-
+        verse.appendChild(document.createTextNode(" "));
         return verse;
       }
 
-      for (const item of alignSentences(yltText, webText)) {
+      const aligned = alignSentences(yltText, webText);
+
+      for (const item of aligned) {
         if (item.type === "same") {
           verse.appendChild(
-            makeElement("p", "sentence same", item.text)
+            makeElement("span", "sentence same", item.text + " ")
           );
-
           continue;
         }
 
-        const comparison = makeElement("div", "comparison");
+        const comparison = makeElement("span", "comparison");
 
         comparison.appendChild(makeConnector());
 
         if (item.ylt) {
           comparison.appendChild(
-            makeElement("p", "sentence ylt", item.ylt)
+            makeElement("span", "sentence ylt", item.ylt)
           );
         }
 
         if (item.web) {
           comparison.appendChild(
-            makeElement("p", "sentence web", item.web)
+            makeElement("span", "sentence web", item.web)
           );
         }
 
         verse.appendChild(comparison);
+        verse.appendChild(document.createTextNode(" "));
       }
 
       return verse;
