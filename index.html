@@ -1,488 +1,719 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light dark">
-  <title>Bible — YLT &amp; WEB</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bible Comparison</title>
 
-  <style>
-    :root {
-      --background: #ffffff;
-      --text: #171717;
-      --muted: #777777;
-      --line: #888888;
-    }
+<style>
+:root {
+  --background: #ffffff;
+  --text: #171717;
+  --muted: #777777;
+  --ylt-color: #202020;
+  --web-color: #202020;
+  --connector: #888888;
+}
 
-    body.dark {
-      --background: #000000;
-      --text: #f5f5f5;
-      --muted: #999999;
-      --line: #888888;
-    }
+body.dark {
+  --background: #000000;
+  --text: #eeeeee;
+  --muted: #888888;
+  --ylt-color: #eeeeee;
+  --web-color: #eeeeee;
+  --connector: #777777;
+}
 
-    * {
-      box-sizing: border-box;
-    }
+* {
+  box-sizing: border-box;
+}
 
-    body {
-      margin: 0;
-      background: var(--background);
-      color: var(--text);
-      font-family: Georgia, "Times New Roman", serif;
-      font-size: 11px;
-      line-height: 1.2;
-    }
+html {
+  background: var(--background);
+}
 
-    #reader {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 6px;
-    }
+body {
+  margin: 0;
+  padding: 10px;
+  background: var(--background);
+  color: var(--text);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 9px;
+  line-height: 1.35;
+  transition: background 0.15s, color 0.15s;
+}
 
-    /* Verses flow continuously instead of each starting a new line. */
-    .verse {
-      display: inline;
-      margin: 0;
-      padding: 0;
-    }
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  margin-bottom: 8px;
+  background: var(--background);
+  border-bottom: 1px solid var(--muted);
+  font-family: Arial, sans-serif;
+}
 
-    /* Small superscript-style reference: G1:2, Ex3:4, etc. */
-    .reference {
-      display: inline;
-      position: relative;
-      top: -0.25em;
-      vertical-align: baseline;
-      color: var(--muted);
-      font-family: Arial, sans-serif;
-      font-size: 0.72em;
-      white-space: nowrap;
-      margin-right: 2px;
-    }
+.toolbar button,
+.toolbar select,
+.toolbar input {
+  min-width: 0;
+  padding: 5px;
+  font-size: 11px;
+  color: var(--text);
+  background: var(--background);
+  border: 1px solid var(--muted);
+  border-radius: 5px;
+}
 
-    .sentence {
-      display: inline;
-      margin: 0;
-      padding: 0;
-      font-size: inherit;
-      line-height: inherit;
-      overflow-wrap: anywhere;
-    }
+.toolbar input {
+  flex: 1;
+}
 
-    .same {
-      display: inline;
-    }
+#status {
+  color: var(--muted);
+  font-family: Arial, sans-serif;
+  font-size: 10px;
+  margin-bottom: 8px;
+}
 
-    /*
-      Differing text is shown as two tightly stacked lines.
-      YLT shifts right 2mm; WEB shifts left 2mm.
-    */
-    .comparison {
-      display: inline-grid;
-      grid-template-columns: minmax(0, 1fr);
-      vertical-align: middle;
-      position: relative;
-      margin: 0 1px;
-      padding: 0;
-      gap: 0;
-      max-width: 100%;
-    }
+#bible {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
 
-    .ylt,
-    .web {
-      display: block;
-      position: relative;
-      font-size: inherit;
-      line-height: 1.15;
-      text-decoration-line: underline;
-      text-decoration-style: dotted;
-      text-decoration-thickness: 0.6px;
-      text-underline-offset: 1px;
-      overflow-wrap: anywhere;
-    }
+/* Chapter headings stay compact. */
+.chapter {
+  display: inline;
+  font-weight: bold;
+  font-size: 1.15em;
+  margin-right: 2px;
+}
 
-    .ylt {
-      transform: translateX(2mm);
-      width: calc(100% - 2mm);
-      justify-self: start;
-    }
+/* Small reference, similar to a superscript Bible reference. */
+.reference {
+  display: inline;
+  font-size: 0.72em;
+  vertical-align: super;
+  color: var(--muted);
+  margin-right: 1px;
+  white-space: nowrap;
+}
 
-    .web {
-      transform: translateX(-2mm);
-      width: calc(100% - 2mm);
-      justify-self: end;
-    }
+/* A matching sentence is shown once. */
+.same {
+  color: var(--text);
+}
 
-    /* Rounded connector arrow between the two translations. */
-    .connector {
-      position: absolute;
-      left: -1px;
-      top: 50%;
-      width: 12px;
-      height: 18px;
-      transform: translateY(-50%);
-      overflow: visible;
-      pointer-events: none;
-      z-index: 2;
-    }
+/*
+  Each comparison is one inline unit.
+  The top and bottom lines belong to the same unit, so following text
+  flows after the bottom line instead of between the two translations.
+*/
+.comparison {
+  display: inline-block;
+  position: relative;
+  vertical-align: baseline;
+  max-width: 100%;
+  margin: 0 1px;
+  overflow: visible;
+  line-height: 1;
+}
 
-    .connector path {
-      fill: none;
-      stroke: var(--line);
-      stroke-width: 1;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
+.version {
+  display: block;
+  position: relative;
+  width: 100%;
+  font-size: 9px;
+  line-height: 2mm;
+  overflow-wrap: anywhere;
+}
 
-    .error {
-      color: #d33;
-      font-family: Arial, sans-serif;
-      white-space: pre-wrap;
-    }
-  </style>
+.ylt {
+  color: var(--ylt-color);
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: #4386d6;
+  text-underline-offset: 1px;
+  transform: translateX(0.7mm);
+}
+
+.web {
+  color: var(--web-color);
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: #d08a42;
+  text-underline-offset: 1px;
+  transform: translateX(-0.7mm);
+}
+
+/* Small curved connector indicating that the lines are a pair. */
+.connector {
+  position: absolute;
+  left: -3px;
+  top: 50%;
+  width: 4px;
+  height: 2mm;
+  border-left: 1px solid var(--connector);
+  border-bottom: 1px solid var(--connector);
+  border-bottom-left-radius: 3px;
+  pointer-events: none;
+  opacity: 0.75;
+}
+
+#message {
+  margin-top: 20px;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Search results */
+mark {
+  background: #ffe68a;
+  color: #111111;
+}
+
+/* Keep controls usable on small screens. */
+@media (max-width: 480px) {
+  body {
+    padding: 7px;
+    font-size: 9px;
+  }
+
+  .version {
+    font-size: 9px;
+    line-height: 2mm;
+  }
+
+  .toolbar {
+    gap: 4px;
+  }
+
+  .toolbar button,
+  .toolbar select {
+    padding: 4px;
+  }
+}
+</style>
 </head>
 
 <body>
-  <main id="reader">Loading Bible...</main>
 
-  <script>
-    "use strict";
+<div class="toolbar">
+  <strong>Bible</strong>
 
-    const reader = document.getElementById("reader");
+  <input
+    id="search"
+    type="search"
+    placeholder="Find a verse (e.g. Genesis 1:2)"
+    aria-label="Search Bible"
+  >
 
-    // Change to "dark" for a black background by default.
-    const DEFAULT_THEME = "light";
+  <button id="themeButton" type="button">Dark</button>
+</div>
 
-    if (DEFAULT_THEME === "dark") {
-      document.body.classList.add("dark");
-    }
+<div id="status">Loading Bible files…</div>
+<div id="bible"></div>
+<div id="message"></div>
 
-    const bookAbbreviations = {
-      "Genesis": "G",
-      "Exodus": "Ex",
-      "Leviticus": "Le",
-      "Numbers": "Nu",
-      "Deuteronomy": "De",
-      "Joshua": "Jos",
-      "Judges": "Jdg",
-      "Ruth": "Ru",
-      "1 Samuel": "1Sa",
-      "2 Samuel": "2Sa",
-      "1 Kings": "1Ki",
-      "2 Kings": "2Ki",
-      "1 Chronicles": "1Ch",
-      "2 Chronicles": "2Ch",
-      "Ezra": "Ezr",
-      "Nehemiah": "Ne",
-      "Esther": "Es",
-      "Job": "Job",
-      "Psalms": "Ps",
-      "Psalm": "Ps",
-      "Proverbs": "Pr",
-      "Ecclesiastes": "Ec",
-      "Song of Solomon": "So",
-      "Isaiah": "Isa",
-      "Jeremiah": "Jer",
-      "Lamentations": "La",
-      "Ezekiel": "Eze",
-      "Daniel": "Da",
-      "Hosea": "Ho",
-      "Joel": "Joe",
-      "Amos": "Am",
-      "Obadiah": "Ob",
-      "Jonah": "Jon",
-      "Micah": "Mic",
-      "Nahum": "Na",
-      "Habakkuk": "Hab",
-      "Zephaniah": "Zep",
-      "Haggai": "Hag",
-      "Zechariah": "Zec",
-      "Malachi": "Mal",
-      "Matthew": "Mt",
-      "Mark": "Mk",
-      "Luke": "Lk",
-      "John": "Jn",
-      "Acts": "Ac",
-      "Romans": "Ro",
-      "1 Corinthians": "1Co",
-      "2 Corinthians": "2Co",
-      "Galatians": "Ga",
-      "Ephesians": "Eph",
-      "Philippians": "Php",
-      "Colossians": "Col",
-      "1 Thessalonians": "1Th",
-      "2 Thessalonians": "2Th",
-      "1 Timothy": "1Ti",
-      "2 Timothy": "2Ti",
-      "Titus": "Tit",
-      "Philemon": "Phm",
-      "Hebrews": "Heb",
-      "James": "Jas",
-      "1 Peter": "1Pe",
-      "2 Peter": "2Pe",
-      "1 John": "1Jn",
-      "2 John": "2Jn",
-      "3 John": "3Jn",
-      "Jude": "Jud",
-      "Revelation": "Re"
-    };
+<script>
+"use strict";
 
-    function shortReference(reference) {
-      const match = reference.match(/^(.+?)\s+(\d+):(\d+)$/);
+/*
+  Files expected beside this index.html:
+    YLT.txt
+    WEB.txt
 
-      if (!match) return reference;
+  Expected line format:
+    Genesis 1:1    In the beginning...
+*/
 
-      const [, book, chapter, verse] = match;
-      const abbreviation = bookAbbreviations[book] || book;
+const DEFAULT_THEME = "light";
 
-      return `${abbreviation}${chapter}:${verse}`;
-    }
+const bible = document.getElementById("bible");
+const status = document.getElementById("status");
+const message = document.getElementById("message");
+const search = document.getElementById("search");
+const themeButton = document.getElementById("themeButton");
 
-    async function loadBibleFile(filename) {
-      const response = await fetch(filename);
+let yltVerses = new Map();
+let webVerses = new Map();
+let renderedVerses = [];
+let currentBook = "";
+let currentChapter = "";
 
-      if (!response.ok) {
-        throw new Error(
-          `Could not load ${filename}. Make sure it is beside index.html.`
-        );
-      }
+/* Book names are converted into compact references. */
+const bookAbbreviations = {
+  "Genesis": "G",
+  "Exodus": "Ex",
+  "Leviticus": "Le",
+  "Numbers": "Nu",
+  "Deuteronomy": "De",
+  "Joshua": "Jos",
+  "Judges": "Jg",
+  "Ruth": "Ru",
+  "1 Samuel": "1S",
+  "2 Samuel": "2S",
+  "1 Kings": "1K",
+  "2 Kings": "2K",
+  "1 Chronicles": "1Ch",
+  "2 Chronicles": "2Ch",
+  "Ezra": "Ezr",
+  "Nehemiah": "Ne",
+  "Esther": "Es",
+  "Job": "Job",
+  "Psalms": "Ps",
+  "Psalm": "Ps",
+  "Proverbs": "Pr",
+  "Ecclesiastes": "Ec",
+  "Song of Solomon": "So",
+  "Isaiah": "Isa",
+  "Jeremiah": "Jer",
+  "Lamentations": "La",
+  "Ezekiel": "Eze",
+  "Daniel": "Da",
+  "Hosea": "Ho",
+  "Joel": "Joe",
+  "Amos": "Am",
+  "Obadiah": "Ob",
+  "Jonah": "Jon",
+  "Micah": "Mic",
+  "Nahum": "Na",
+  "Habakkuk": "Hab",
+  "Zephaniah": "Zep",
+  "Haggai": "Hag",
+  "Zechariah": "Zec",
+  "Malachi": "Mal",
+  "Matthew": "Mt",
+  "Mark": "Mk",
+  "Luke": "Lu",
+  "John": "J",
+  "Acts": "Ac",
+  "Romans": "Ro",
+  "1 Corinthians": "1Co",
+  "2 Corinthians": "2Co",
+  "Galatians": "Ga",
+  "Ephesians": "Eph",
+  "Philippians": "Php",
+  "Colossians": "Col",
+  "1 Thessalonians": "1Th",
+  "2 Thessalonians": "2Th",
+  "1 Timothy": "1Ti",
+  "2 Timothy": "2Ti",
+  "Titus": "Tit",
+  "Philemon": "Phm",
+  "Hebrews": "Heb",
+  "James": "Jas",
+  "1 Peter": "1Pe",
+  "2 Peter": "2Pe",
+  "1 John": "1J",
+  "2 John": "2J",
+  "3 John": "3J",
+  "Jude": "Jud",
+  "Revelation": "Re"
+};
 
-      const contents = await response.text();
-      const verses = new Map();
+/*
+  Parse lines such as:
+  Genesis 1:1<TAB>In the beginning...
+*/
+function parseBible(text) {
+  const verses = new Map();
+  const lines = text.replace(/^\uFEFF/, "").split(/\r?\n/);
 
-      for (const line of contents.split(/\r?\n/)) {
-        const match = line.match(/^(.+?)\s+(\d+:\d+)\t(.*)$/);
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
 
-        if (!match) continue;
+    if (!line) continue;
 
-        const [, book, chapterVerse, text] = match;
-        verses.set(`${book} ${chapterVerse}`, text.trim());
-      }
+    const match = line.match(
+      /^(.+?)\s+(\d+):(\d+)\s+(.+)$/
+    );
 
-      return verses;
-    }
+    if (!match) continue;
 
-    function normalize(text) {
-      return text
-        .normalize("NFC")
-        .replace(/[‘’]/g, "'")
-        .replace(/[“”]/g, '"')
-        .replace(/[—–]/g, "-")
-        .replace(/[.,;:!?'"()[\]{}\-]/g, "")
-        .replace(/\s+/g, " ")
-        .trim()
-        .toLowerCase();
-    }
+    const book = match[1].trim();
+    const chapter = Number(match[2]);
+    const verse = Number(match[3]);
+    const content = match[4].trim();
 
-    // Split at sentence-ending punctuation, retaining the punctuation.
-    function splitSentences(text) {
-      const matches = text.match(
-        /[^.!?]+(?:[.!?]+["'’”)]*)*|[.!?]+/g
-      );
+    if (!content) continue;
 
-      return (matches || [])
-        .map(sentence => sentence.trim())
-        .filter(Boolean);
-    }
+    const key = `${book}|${chapter}|${verse}`;
 
-    function makeElement(tag, className, text) {
-      const element = document.createElement(tag);
+    verses.set(key, {
+      book,
+      chapter,
+      verse,
+      text: content
+    });
+  }
 
-      if (className) element.className = className;
-      if (text !== undefined) element.textContent = text;
+  return verses;
+}
 
-      return element;
-    }
+/*
+  Normalize typographic differences and whitespace before comparing.
+  Punctuation and wording remain significant.
+*/
+function normalizeSentence(text) {
+  return text
+    .normalize("NFC")
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'")
+    .replace(/[–—]/g, "-")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
-    function makeConnector() {
-      const svg = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "svg"
-      );
+/*
+  Split text into sentence-like units while retaining punctuation.
+  This is a lightweight splitter rather than a full language parser.
+*/
+function splitSentences(text) {
+  const cleaned = text.replace(/\s+/g, " ").trim();
 
-      svg.setAttribute("class", "connector");
-      svg.setAttribute("viewBox", "0 0 12 18");
-      svg.setAttribute("aria-hidden", "true");
+  if (!cleaned) return [];
 
-      const path = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "path"
-      );
+  const parts = cleaned.match(/[^.!?]+(?:[.!?]+["'”’)\]]*|$)/g);
 
-      // Smooth, rounded turn toward the lower translation.
-      path.setAttribute("d", "M1 1 H3 Q7 1 7 5 V13 Q7 17 11 17");
+  return (parts || [cleaned])
+    .map(part => part.trim())
+    .filter(Boolean);
+}
 
-      const arrowhead = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "path"
-      );
+/*
+  If the sentence sequences are different, align them in order.
+  Matching sentences are shown once; unmatched sentences show both.
+*/
+function alignSentences(yltText, webText) {
+  const ylt = splitSentences(yltText);
+  const web = splitSentences(webText);
 
-      arrowhead.setAttribute("d", "M8 14 L11 17 L8 18");
+  const a = ylt.map(normalizeSentence);
+  const b = web.map(normalizeSentence);
 
-      svg.append(path, arrowhead);
+  const rows = [];
+  let i = 0;
+  let j = 0;
 
-      return svg;
+  while (i < ylt.length && j < web.length) {
+    if (a[i] === b[j]) {
+      rows.push({
+        type: "same",
+        text: ylt[i]
+      });
+      i++;
+      j++;
+      continue;
     }
 
     /*
-      Identify identical sentences in order. Matching sentences are
-      displayed once; unmatched sentences are displayed as a pair.
+      Look ahead for the next sentence that matches.
+      This keeps sentences in their original order.
     */
-    function alignSentences(yltText, webText) {
-      const ylt = splitSentences(yltText);
-      const web = splitSentences(webText);
+    let match = null;
 
-      const a = ylt.map(normalize);
-      const b = web.map(normalize);
+    for (let di = 0; di <= 4 && i + di < ylt.length; di++) {
+      for (let dj = 0; dj <= 4 && j + dj < web.length; dj++) {
+        if (a[i + di] === b[j + dj]) {
+          const distance = di + dj;
 
-      const dp = Array.from(
-        { length: a.length + 1 },
-        () => Array(b.length + 1).fill(0)
-      );
-
-      for (let i = a.length - 1; i >= 0; i--) {
-        for (let j = b.length - 1; j >= 0; j--) {
-          dp[i][j] = a[i] === b[j]
-            ? 1 + dp[i + 1][j + 1]
-            : Math.max(dp[i + 1][j], dp[i][j + 1]);
-        }
-      }
-
-      const result = [];
-      let i = 0;
-      let j = 0;
-
-      while (i < a.length && j < b.length) {
-        if (a[i] === b[j]) {
-          result.push({
-            type: "same",
-            text: ylt[i]
-          });
-
-          i++;
-          j++;
-          continue;
-        }
-
-        const startI = i;
-        const startJ = j;
-
-        while (
-          i < a.length &&
-          j < b.length &&
-          a[i] !== b[j]
-        ) {
-          if (dp[i + 1][j] >= dp[i][j + 1]) {
-            i++;
-          } else {
-            j++;
+          if (!match || distance < match.distance) {
+            match = { di, dj, distance };
           }
         }
-
-        const yltPart = ylt.slice(startI, i);
-        const webPart = web.slice(startJ, j);
-
-        if (yltPart.length || webPart.length) {
-          result.push({
-            type: "different",
-            ylt: yltPart.join(" "),
-            web: webPart.join(" ")
-          });
-        }
       }
-
-      if (i < a.length || j < b.length) {
-        result.push({
-          type: "different",
-          ylt: ylt.slice(i).join(" "),
-          web: web.slice(j).join(" ")
-        });
-      }
-
-      return result;
     }
 
-    function renderVerse(reference, yltText, webText) {
-      const verse = makeElement("span", "verse");
+    if (!match) {
+      rows.push({
+        type: "different",
+        ylt: ylt.slice(i).join(" "),
+        web: web.slice(j).join(" ")
+      });
 
-      verse.appendChild(
-        makeElement("sub", "reference", shortReference(reference))
+      i = ylt.length;
+      j = web.length;
+      break;
+    }
+
+    const yltOnly = ylt.slice(i, i + match.di);
+    const webOnly = web.slice(j, j + match.dj);
+
+    const max = Math.max(yltOnly.length, webOnly.length);
+
+    for (let k = 0; k < max; k++) {
+      rows.push({
+        type: "different",
+        ylt: yltOnly[k] || "",
+        web: webOnly[k] || ""
+      });
+    }
+
+    i += match.di;
+    j += match.dj;
+  }
+
+  while (i < ylt.length) {
+    rows.push({
+      type: "different",
+      ylt: ylt[i],
+      web: ""
+    });
+    i++;
+  }
+
+  while (j < web.length) {
+    rows.push({
+      type: "different",
+      ylt: "",
+      web: web[j]
+    });
+    j++;
+  }
+
+  return rows;
+}
+
+function abbreviateBook(book) {
+  return bookAbbreviations[book] || book.slice(0, 3);
+}
+
+function makeReference(verse) {
+  const ref = document.createElement("span");
+  ref.className = "reference";
+  ref.textContent =
+    `${abbreviateBook(verse.book)}${verse.chapter}:${verse.verse}`;
+
+  ref.title = `${verse.book} ${verse.chapter}:${verse.verse}`;
+
+  return ref;
+}
+
+function makeComparison(yltText, webText) {
+  const pair = document.createElement("span");
+  pair.className = "comparison";
+
+  if (yltText) {
+    const top = document.createElement("span");
+    top.className = "version ylt";
+    top.textContent = yltText;
+    top.title = "Young's Literal Translation";
+    pair.appendChild(top);
+  }
+
+  if (webText) {
+    const bottom = document.createElement("span");
+    bottom.className = "version web";
+    bottom.textContent = webText;
+    bottom.title = "World English Bible";
+    pair.appendChild(bottom);
+  }
+
+  const connector = document.createElement("span");
+  connector.className = "connector";
+  connector.setAttribute("aria-hidden", "true");
+  pair.appendChild(connector);
+
+  return pair;
+}
+
+function renderBible() {
+  bible.replaceChildren();
+
+  let lastBook = "";
+  let lastChapter = "";
+
+  for (const item of renderedVerses) {
+    const bookChanged = item.book !== lastBook;
+    const chapterChanged =
+      item.book !== lastBook || item.chapter !== lastChapter;
+
+    if (chapterChanged) {
+      if (bible.childNodes.length) {
+        bible.appendChild(document.createTextNode(" "));
+      }
+
+      const heading = document.createElement("span");
+      heading.className = "chapter";
+      heading.textContent =
+        `${item.book} ${item.chapter} `;
+
+      bible.appendChild(heading);
+
+      lastBook = item.book;
+      lastChapter = item.chapter;
+    }
+
+    bible.appendChild(makeReference(item));
+
+    const rows = alignSentences(item.yltText, item.webText);
+
+    for (const row of rows) {
+      if (row.type === "same") {
+        bible.appendChild(document.createTextNode(row.text + " "));
+      } else {
+        bible.appendChild(makeComparison(row.ylt, row.web));
+        bible.appendChild(document.createTextNode(" "));
+      }
+    }
+  }
+}
+
+function buildVerseList() {
+  const keys = new Set([
+    ...yltVerses.keys(),
+    ...webVerses.keys()
+  ]);
+
+  const all = [];
+
+  for (const key of keys) {
+    const ylt = yltVerses.get(key);
+    const web = webVerses.get(key);
+    const source = ylt || web;
+
+    if (!source) continue;
+
+    all.push({
+      key,
+      book: source.book,
+      chapter: source.chapter,
+      verse: source.verse,
+      yltText: ylt ? ylt.text : "",
+      webText: web ? web.text : ""
+    });
+  }
+
+  all.sort((a, b) => {
+    if (a.book !== b.book) {
+      return a.key.localeCompare(b.key, undefined, {
+        numeric: true
+      });
+    }
+
+    if (a.chapter !== b.chapter) return a.chapter - b.chapter;
+    return a.verse - b.verse;
+  });
+
+  return all;
+}
+
+function showAll() {
+  renderedVerses = buildVerseList();
+  renderBible();
+
+  status.textContent =
+    `${renderedVerses.length.toLocaleString()} verses loaded`;
+
+  message.textContent = "";
+}
+
+function searchVerse() {
+  const query = search.value.trim();
+
+  if (!query) {
+    showAll();
+    return;
+  }
+
+  /*
+    Accept full references such as Genesis 1:2,
+    or compact references such as G1:2.
+  */
+  const normalizedQuery = query.toLowerCase().replace(/\s+/g, "");
+
+  const found = buildVerseList().filter(item => {
+    const full = `${item.book}${item.chapter}:${item.verse}`
+      .toLowerCase()
+      .replace(/\s+/g, "");
+
+    const compact =
+      `${abbreviateBook(item.book)}${item.chapter}:${item.verse}`
+        .toLowerCase()
+        .replace(/\s+/g, "");
+
+    return full === normalizedQuery || compact === normalizedQuery;
+  });
+
+  renderedVerses = found;
+  renderBible();
+
+  status.textContent = found.length
+    ? `Found ${found.length} verse${found.length === 1 ? "" : "s"}`
+    : "No matching verse found";
+
+  message.textContent = found.length
+    ? ""
+    : "Try a reference such as Genesis 1:2 or G1:2.";
+}
+
+function setTheme(theme) {
+  document.body.classList.toggle("dark", theme === "dark");
+  themeButton.textContent = theme === "dark" ? "Light" : "Dark";
+}
+
+themeButton.addEventListener("click", () => {
+  setTheme(document.body.classList.contains("dark") ? "light" : "dark");
+});
+
+search.addEventListener("keydown", event => {
+  if (event.key === "Enter") searchVerse();
+});
+
+search.addEventListener("search", () => {
+  if (!search.value.trim()) showAll();
+});
+
+/* Load the two local text files. */
+async function loadBible() {
+  setTheme(DEFAULT_THEME);
+
+  try {
+    const [yltResponse, webResponse] = await Promise.all([
+      fetch("./YLT.txt"),
+      fetch("./WEB.txt")
+    ]);
+
+    if (!yltResponse.ok) {
+      throw new Error(`Could not load YLT.txt (${yltResponse.status})`);
+    }
+
+    if (!webResponse.ok) {
+      throw new Error(`Could not load WEB.txt (${webResponse.status})`);
+    }
+
+    const [yltText, webText] = await Promise.all([
+      yltResponse.text(),
+      webResponse.text()
+    ]);
+
+    yltVerses = parseBible(yltText);
+    webVerses = parseBible(webText);
+
+    if (!yltVerses.size && !webVerses.size) {
+      throw new Error(
+        "No verses were recognized. Check the text-file format."
       );
-
-      if (yltText === undefined || webText === undefined) {
-        verse.appendChild(
-          makeElement("span", "sentence same", yltText ?? webText ?? "")
-        );
-        verse.appendChild(document.createTextNode(" "));
-        return verse;
-      }
-
-      const aligned = alignSentences(yltText, webText);
-
-      for (const item of aligned) {
-        if (item.type === "same") {
-          verse.appendChild(
-            makeElement("span", "sentence same", item.text + " ")
-          );
-          continue;
-        }
-
-        const comparison = makeElement("span", "comparison");
-
-        comparison.appendChild(makeConnector());
-
-        if (item.ylt) {
-          comparison.appendChild(
-            makeElement("span", "sentence ylt", item.ylt)
-          );
-        }
-
-        if (item.web) {
-          comparison.appendChild(
-            makeElement("span", "sentence web", item.web)
-          );
-        }
-
-        verse.appendChild(comparison);
-        verse.appendChild(document.createTextNode(" "));
-      }
-
-      return verse;
     }
 
-    async function startReader() {
-      try {
-        const [ylt, web] = await Promise.all([
-          loadBibleFile("./YLT.txt"),
-          loadBibleFile("./WEB.txt")
-        ]);
+    showAll();
+  } catch (error) {
+    status.textContent = "Could not load the Bible files.";
+    message.textContent =
+      `${error.message} Make sure YLT.txt and WEB.txt are beside index.html, then run Live Server in VS Code.`;
+    console.error(error);
+  }
+}
 
-        const references = [
-          ...new Set([...ylt.keys(), ...web.keys()])
-        ];
+loadBible();
+</script>
 
-        const fragment = document.createDocumentFragment();
-
-        for (const reference of references) {
-          fragment.appendChild(
-            renderVerse(
-              reference,
-              ylt.get(reference),
-              web.get(reference)
-            )
-          );
-        }
-
-        reader.replaceChildren(fragment);
-      } catch (error) {
-        reader.replaceChildren(
-          makeElement("p", "error", error.message)
-        );
-      }
-    }
-
-    startReader();
-  </script>
 </body>
 </html>
