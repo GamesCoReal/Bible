@@ -1,621 +1,1357 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bible Family Tree Viewer</title>
-  <style>
-    :root {
-      color-scheme: dark;
-      --bg: #0d1117;
-      --panel: #161b22;
-      --panel-2: #21262d;
-      --border: #30363d;
-      --text: #e6edf3;
-      --muted: #9da7b3;
-      --accent: #7ee787;
-      --line: #8b949e;
-      --node: #1f2937;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bible Family Tree Viewer</title>
 
-    * { box-sizing: border-box; }
+<style>
+:root {
+    color-scheme: dark;
+    --bg: #0d1117;
+    --panel: #161b22;
+    --card: #21262d;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #9da7b3;
+    --accent: #7ee787;
+    --line: #66717e;
+}
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background: var(--bg);
-      color: var(--text);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
+* {
+    box-sizing: border-box;
+}
 
-    header {
-      padding: 22px 24px 16px;
-      border-bottom: 1px solid var(--border);
-    }
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+}
 
-    h1 {
-      margin: 0 0 6px;
-      font-size: clamp(1.35rem, 3vw, 1.8rem);
-      font-weight: 700;
-    }
+body {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
 
-    header p {
-      margin: 0;
-      color: var(--muted);
-      font-size: .95rem;
-    }
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+}
 
-    main {
-      display: grid;
-      grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
-      gap: 16px;
-      padding: 16px;
-      min-height: calc(100vh - 94px);
-    }
+h1 {
+    margin: 0;
+    font-size: 18px;
+}
 
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      min-width: 0;
-      overflow: hidden;
-    }
+.subtitle {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 4px;
+}
 
-    .editor-panel {
-      display: flex;
-      flex-direction: column;
-    }
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
 
-    .panel-heading {
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--border);
-      font-weight: 650;
-    }
+button, .file-label {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 11px;
+    background: var(--card);
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
 
-    .editor-help {
-      padding: 12px 16px 0;
-      color: var(--muted);
-      font-size: .85rem;
-      line-height: 1.45;
-    }
+button:hover, .file-label:hover {
+    border-color: var(--accent);
+}
 
-    textarea {
-      display: block;
-      width: 100%;
-      min-height: 330px;
-      flex: 1;
-      resize: vertical;
-      padding: 14px 16px;
-      background: #0d1117;
-      color: var(--text);
-      border: 0;
-      outline: none;
-      font: 14px/1.65 ui-monospace, SFMono-Regular, Consolas, monospace;
-      tab-size: 2;
-    }
+button:focus-visible, .file-label:focus-within {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
 
-    textarea:focus-visible {
-      box-shadow: inset 0 0 0 2px var(--accent);
-    }
+input[type="file"] {
+    display: none;
+}
 
-    .editor-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      padding: 12px;
-      border-top: 1px solid var(--border);
-    }
+.workspace {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+}
 
-    button {
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 9px 12px;
-      background: var(--panel-2);
-      color: var(--text);
-      font: inherit;
-      font-weight: 600;
-      cursor: pointer;
-    }
+aside {
+    width: 240px;
+    flex: 0 0 240px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+}
 
-    button.primary {
-      color: #07140a;
-      background: var(--accent);
-      border-color: var(--accent);
-    }
+.side-heading {
+    padding: 14px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+}
 
-    button:hover { filter: brightness(1.08); }
-    button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.search-wrap {
+    padding: 0 10px 10px;
+}
 
-    .tree-panel {
-      display: flex;
-      flex-direction: column;
-      min-height: 540px;
-    }
+#search {
+    width: 100%;
+    padding: 9px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+}
 
-    .tree-toolbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-      padding: 12px 14px;
-      border-bottom: 1px solid var(--border);
-    }
+#peopleList {
+    overflow: auto;
+    padding: 0 8px 12px;
+}
 
-    .tree-toolbar small { color: var(--muted); }
+.person-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    margin: 2px 0;
+    padding: 9px;
+    text-align: left;
+    border-color: transparent;
+    background: transparent;
+}
 
-    .tree-viewport {
-      position: relative;
-      flex: 1;
-      min-height: 480px;
-      overflow: auto;
-      background-image: radial-gradient(#26303a 1px, transparent 1px);
-      background-size: 22px 22px;
-      overscroll-behavior: contain;
-    }
+.person-row.selected {
+    background: #1c2b21;
+    border-color: #315b3b;
+}
 
-    #treeCanvas {
-      position: relative;
-      min-width: 100%;
-      min-height: 100%;
-      width: max-content;
-      padding: 34px;
-    }
+.avatar {
+    flex: 0 0 36px;
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: var(--card);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 700;
+}
 
-    .tree-stage {
-      position: relative;
-      width: max-content;
-      min-width: 100%;
-      min-height: 400px;
-      margin: 0 auto;
-    }
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
 
-    svg.connections {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      overflow: visible;
-      pointer-events: none;
-    }
+.person-label {
+    min-width: 0;
+}
 
-    .tree-levels {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 70px;
-      width: max-content;
-      min-width: 100%;
-    }
+.person-name {
+    font-size: 13px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
 
-    .tree-level {
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      gap: 28px;
-      width: max-content;
-      min-width: 100%;
-    }
+.person-meta {
+    color: var(--muted);
+    font-size: 11px;
+    margin-top: 3px;
+}
 
-    .person-node {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 138px;
-      max-width: 220px;
-      min-height: 58px;
-      padding: 12px 16px;
-      border: 1px solid #526171;
-      border-radius: 12px;
-      background: var(--node);
-      color: var(--text);
-      text-align: center;
-      overflow-wrap: anywhere;
-      box-shadow: 0 4px 14px #0003;
-      cursor: pointer;
-      user-select: none;
-    }
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+}
 
-    .person-node:hover { border-color: var(--accent); }
-    .person-node.selected {
-      border: 2px solid var(--accent);
-      padding: 11px 15px;
-    }
+.tree-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+}
 
-    .person-node .subtitle {
-      display: block;
-      color: var(--muted);
-      font-size: .75rem;
-      font-weight: 400;
-      margin-top: 3px;
-    }
+.tree-status {
+    color: var(--muted);
+    font-size: 12px;
+}
 
-    .empty-state {
-      min-height: 440px;
-      display: grid;
-      place-items: center;
-      padding: 32px;
-      color: var(--muted);
-      text-align: center;
-      line-height: 1.6;
+.tree-actions {
+    display: flex;
+    gap: 6px;
+}
+
+#treeViewport {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    background-image: radial-gradient(#29313a 1px, transparent 1px);
+    background-size: 22px 22px;
+}
+
+#treeCanvas {
+    position: relative;
+    width: max-content;
+    min-width: 100%;
+    min-height: 100%;
+    padding: 42px 50px 70px;
+    transform-origin: top left;
+}
+
+#connectors {
+    position: absolute;
+    inset: 0;
+    overflow: visible;
+    pointer-events: none;
+}
+
+#nodesLayer {
+    position: relative;
+    z-index: 1;
+}
+
+.generation {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 28px;
+    width: max-content;
+    min-width: 100%;
+}
+
+.family-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.person-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 164px;
+    min-height: 82px;
+    padding: 11px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--panel);
+    color: var(--text);
+    text-align: left;
+    box-shadow: 0 5px 18px #0003;
+}
+
+.person-card:hover {
+    border-color: #63816a;
+}
+
+.person-card.selected {
+    border-color: var(--accent);
+    background: #19291e;
+}
+
+.card-text {
+    min-width: 0;
+}
+
+.card-name {
+    font-size: 13px;
+    line-height: 1.3;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.card-subtitle {
+    margin-top: 5px;
+    color: var(--muted);
+    font-size: 10px;
+}
+
+.children-row {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 22px;
+    margin-top: 54px;
+}
+
+.empty-state {
+    max-width: 520px;
+    margin: 65px auto;
+    padding: 24px;
+    text-align: center;
+    color: var(--muted);
+    border: 1px dashed var(--border);
+    border-radius: 14px;
+    background: var(--panel);
+}
+
+.empty-state h2 {
+    color: var(--text);
+    font-size: 17px;
+}
+
+.details {
+    width: 300px;
+    flex: 0 0 300px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    background: var(--panel);
+    border-left: 1px solid var(--border);
+}
+
+.details-heading {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.details-heading h2 {
+    margin: 0;
+    font-size: 15px;
+}
+
+.details-content {
+    padding: 16px;
+    overflow: auto;
+}
+
+.detail-avatar {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 12px;
+}
+
+.detail-name {
+    font-size: 22px;
+    font-weight: 750;
+    overflow-wrap: anywhere;
+}
+
+.detail-type {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.detail-section {
+    margin-top: 17px;
+    padding-top: 13px;
+    border-top: 1px solid var(--border);
+}
+
+.detail-section h3 {
+    margin: 0 0 8px;
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+}
+
+.detail-section p,
+.detail-section li {
+    font-size: 13px;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+}
+
+.detail-section p {
+    margin: 5px 0;
+}
+
+.detail-section ul {
+    padding-left: 18px;
+    margin: 0;
+}
+
+.detail-empty {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.mobile-only {
+    display: none;
+}
+
+@media (max-width: 1000px) {
+    aside {
+        width: 205px;
+        flex-basis: 205px;
     }
 
     .details {
-      border-top: 1px solid var(--border);
-      padding: 14px 16px;
-      background: #11161d;
+        width: 255px;
+        flex-basis: 255px;
     }
 
-    .details h2 {
-      margin: 0 0 8px;
-      font-size: 1rem;
+    .person-card {
+        width: 145px;
     }
 
-    .details p {
-      margin: 0;
-      color: var(--muted);
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-      font-size: .9rem;
-      line-height: 1.5;
+    .generation {
+        gap: 18px;
+    }
+}
+
+@media (max-width: 720px) {
+    header {
+        padding: 10px;
+        align-items: flex-start;
     }
 
-    .status {
-      min-height: 1.2em;
-      padding: 0 16px 12px;
-      color: var(--muted);
-      font-size: .82rem;
+    h1 {
+        font-size: 16px;
     }
 
-    @media (max-width: 850px) {
-      main { grid-template-columns: 1fr; }
-      .tree-panel { min-height: 520px; }
-      .tree-viewport { min-height: 430px; }
-      textarea { min-height: 240px; }
+    .subtitle {
+        max-width: 170px;
+        line-height: 1.4;
     }
-  </style>
+
+    .toolbar button,
+    .file-label {
+        padding: 7px 8px;
+        font-size: 12px;
+    }
+
+    aside {
+        width: 100%;
+        flex: 1;
+        border-right: 0;
+    }
+
+    main,
+    .details {
+        display: none;
+    }
+
+    body.mobile-tree main {
+        display: flex;
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        background: var(--bg);
+    }
+
+    body.mobile-details .details {
+        display: flex;
+        position: absolute;
+        inset: 0;
+        z-index: 4;
+        width: 100%;
+        border-left: 0;
+    }
+
+    body.mobile-tree aside,
+    body.mobile-tree .details,
+    body.mobile-details aside,
+    body.mobile-details main {
+        display: none;
+    }
+
+    .mobile-only {
+        display: inline-block;
+    }
+
+    #treeCanvas {
+        padding: 30px 24px 60px;
+    }
+
+    .generation {
+        gap: 18px;
+    }
+
+    .children-row {
+        gap: 14px;
+        margin-top: 42px;
+    }
+
+    .person-card {
+        width: 145px;
+    }
+
+    .tree-toolbar {
+        padding: 8px;
+    }
+}
+</style>
 </head>
+
 <body>
-  <header>
-    <h1>Bible Family Tree</h1>
-    <p>Enter people and their family relationships. The tree is drawn automatically.</p>
-  </header>
 
-  <main>
-    <section class="panel editor-panel" aria-label="Family tree input">
-      <div class="panel-heading">Family tree data</div>
-      <div class="editor-help">
-        One person per line. Use <code>Name: Person</code>, then relationship lines such as
-        <code>Father: Adam</code>, <code>Mother: Eve</code>, <code>Brother: Abel</code>,
-        or <code>Spouse: Name</code>. You can also use <code>Child: Name</code>.
-      </div>
-      <textarea id="familyInput" spellcheck="false" aria-label="Type family tree data">Name: Adam
+<header>
+    <div>
+        <h1>Bible Family Tree</h1>
+        <div class="subtitle">Descendants only · Select a person for details</div>
+    </div>
 
-Name: Eve
+    <div class="toolbar">
+        <label class="file-label" for="mdFile">Open .md</label>
+        <input id="mdFile" type="file" accept=".md,.markdown,.txt">
+        <button id="demoButton">Load demo</button>
+        <button id="resetButton">Reset view</button>
+    </div>
+</header>
 
-Name: Cain
-Father: Adam
-Mother: Eve
-Brother: Abel
+<div class="workspace">
 
-Name: Abel
-Father: Adam
-Mother: Eve
-Brother: Cain
+    <aside>
+        <div class="side-heading">People</div>
+        <div class="search-wrap">
+            <input id="search" type="search" placeholder="Search people…">
+        </div>
+        <div id="peopleList"></div>
+    </aside>
 
-Name: Seth
-Father: Adam
-Mother: Eve</textarea>
-      <div class="editor-actions">
-        <button class="primary" id="drawButton">Draw tree</button>
-        <button id="exampleButton">Load example</button>
-        <button id="clearButton">Clear</button>
-      </div>
-      <div class="status" id="status" role="status" aria-live="polite"></div>
+    <main>
+        <div class="tree-toolbar">
+            <div id="treeStatus" class="tree-status">No file loaded</div>
+            <div class="tree-actions">
+                <button id="zoomOut" title="Zoom out">−</button>
+                <button id="zoomIn" title="Zoom in">+</button>
+                <button id="fitButton">Fit tree</button>
+                <button id="showPeople" class="mobile-only">People</button>
+            </div>
+        </div>
+
+        <div id="treeViewport">
+            <div id="treeCanvas">
+                <svg id="connectors"></svg>
+                <div id="nodesLayer"></div>
+            </div>
+        </div>
+    </main>
+
+    <section class="details">
+        <div class="details-heading">
+            <h2>Person details</h2>
+        </div>
+
+        <div id="detailsContent" class="details-content">
+            <div class="detail-empty">
+                Open a Markdown file or load the demo, then select a person.
+            </div>
+        </div>
+
+        <div style="padding: 0 16px 14px">
+            <button id="backToTree" class="mobile-only">Back to tree</button>
+        </div>
     </section>
 
-    <section class="panel tree-panel" aria-label="Family tree display">
-      <div class="tree-toolbar">
-        <strong>Family tree</strong>
-        <small id="treeCount">0 people</small>
-      </div>
-      <div class="tree-viewport" id="treeViewport">
-        <div class="empty-state" id="emptyState">
-          Type your family tree on the left, then select <strong>Draw tree</strong>.
-        </div>
-        <div id="treeCanvas" hidden>
-          <div class="tree-stage" id="treeStage">
-            <svg class="connections" id="connections" aria-hidden="true"></svg>
-            <div class="tree-levels" id="treeLevels"></div>
-          </div>
-        </div>
-      </div>
-      <div class="details" id="details" hidden>
-        <h2 id="detailsName">Select a person</h2>
-        <p id="detailsText"></p>
-      </div>
-    </section>
-  </main>
+</div>
 
-  <script>
-    const input = document.getElementById("familyInput");
-    const drawButton = document.getElementById("drawButton");
-    const exampleButton = document.getElementById("exampleButton");
-    const clearButton = document.getElementById("clearButton");
-    const statusEl = document.getElementById("status");
-    const treeCount = document.getElementById("treeCount");
-    const emptyState = document.getElementById("emptyState");
-    const treeCanvas = document.getElementById("treeCanvas");
-    const treeStage = document.getElementById("treeStage");
-    const treeLevels = document.getElementById("treeLevels");
-    const connections = document.getElementById("connections");
-    const details = document.getElementById("details");
-    const detailsName = document.getElementById("detailsName");
-    const detailsText = document.getElementById("detailsText");
+<script>
+"use strict";
 
-    const example = `Name: Adam
+const $ = selector => document.querySelector(selector);
 
-Name: Eve
+const DEMO_MARKDOWN = `# FAMILY TREE
 
-Name: Cain
-Father: Adam
-Mother: Eve
-Brother: Abel
+## Adam
+Sons: Cain, Abel, Seth
 
-Name: Abel
-Father: Adam
-Mother: Eve
-Brother: Cain
+## Eve
+Sons: Cain, Abel, Seth
 
-Name: Seth
-Father: Adam
-Mother: Eve`;
+## Cain
+Parents: Adam, Eve
+Sons: Enoch
+Summary: Cain was a son of Adam and Eve.
+Verses: Genesis 4:1, Genesis 4:17
 
-    let people = new Map();
-    let selectedName = null;
-    let resizeObserver = null;
+## Abel
+Parents: Adam, Eve
+Summary: Abel was a son of Adam and Eve.
+Verses: Genesis 4:2
 
-    function cleanName(value) {
-      return value.trim().replace(/^["']|["']$/g, "").trim();
+## Seth
+Parents: Adam, Eve
+Sons: Enosh
+Summary: Seth was born after Abel's death.
+Verses: Genesis 4:25, Genesis 5:3-6
+
+## Enoch
+Parents: Cain
+Summary: Enoch was Cain's son.
+Verses: Genesis 4:17
+
+## Enosh
+Parents: Seth
+Summary: Enosh was Seth's son.
+Verses: Genesis 4:26, Genesis 5:6-11
+`;
+
+const state = {
+    people: new Map(),
+    selectedId: null,
+    zoom: 1
+};
+
+function normalizeName(name) {
+    return String(name || "")
+        .trim()
+        .replace(/\s+/g, " ")
+        .toLocaleLowerCase();
+}
+
+function cleanName(name) {
+    return String(name || "").trim().replace(/\s+/g, " ");
+}
+
+function getPerson(name) {
+    const clean = cleanName(name);
+
+    if (
+        !clean ||
+        /^(unknown|unnamed|none|n\/a)$/i.test(clean)
+    ) {
+        return null;
     }
 
-    function ensurePerson(name) {
-      const key = name.toLocaleLowerCase();
-      if (!people.has(key)) {
-        people.set(key, { name, relations: [], rawLines: [] });
-      }
-      return people.get(key);
-    }
+    const id = normalizeName(clean);
 
-    function parseInput(text) {
-      people = new Map();
-      let current = null;
-      const lines = text.split(/\r?\n/);
-
-      for (const rawLine of lines) {
-        const line = rawLine.trim();
-        if (!line || line.startsWith("#")) continue;
-
-        const nameMatch = line.match(/^Name\s*:\s*(.+)$/i);
-        if (nameMatch) {
-          current = ensurePerson(cleanName(nameMatch[1]));
-          current.rawLines.push(line);
-          continue;
-        }
-
-        const relationMatch = line.match(/^([^:]+)\s*:\s*(.+)$/);
-        if (relationMatch && current) {
-          const relation = relationMatch[1].trim();
-          const target = cleanName(relationMatch[2].split(";")[0]);
-          if (!target || /^(unknown|none|n\/a)$/i.test(target)) continue;
-          const targetPerson = ensurePerson(target);
-          current.relations.push({ type: relation, target: targetPerson.name });
-          current.rawLines.push(line);
-        } else if (!current) {
-          statusEl.textContent = `Skipped line because no "Name:" appears before it: ${line}`;
-        }
-      }
-
-      // Remove repeated relationship records.
-      for (const person of people.values()) {
-        const seen = new Set();
-        person.relations = person.relations.filter(rel => {
-          const key = `${rel.type.toLowerCase()}|${rel.target.toLowerCase()}`;
-          if (seen.has(key)) return false;
-          seen.add(key);
-          return true;
+    if (!state.people.has(id)) {
+        state.people.set(id, {
+            id,
+            name: clean,
+            parents: new Set(),
+            sons: new Set(),
+            daughters: new Set(),
+            summary: [],
+            verses: [],
+            location: "",
+            dates: [],
+            image: "",
+            notes: []
         });
-      }
     }
 
-    function deriveParentChildLinks() {
-      const links = [];
-      const seen = new Set();
+    return state.people.get(id);
+}
 
-      function add(a, b, kind) {
-        if (!people.has(a.toLowerCase()) || !people.has(b.toLowerCase())) return;
-        if (a.toLowerCase() === b.toLowerCase()) return;
-        const key = [a.toLowerCase(), b.toLowerCase()].sort().join("|") + "|" + kind;
-        if (seen.has(key)) return;
-        seen.add(key);
-        links.push({ a: people.get(a.toLowerCase()).name, b: people.get(b.toLowerCase()).name, kind });
-      }
+function splitNames(value) {
+    return value
+        .split(/[,;]|\s+and\s+/i)
+        .map(value => value.trim())
+        .filter(Boolean);
+}
 
-      for (const person of people.values()) {
-        for (const rel of person.relations) {
-          const type = rel.type.toLowerCase();
-          if (["father", "mother", "parent", "father's father", "father’s father",
-               "father's mother", "father’s mother", "mother's father", "mother’s father",
-               "mother's mother", "mother’s mother"].includes(type)) {
-            add(rel.target, person.name, "family");
-          } else if (["child", "son", "daughter"].includes(type)) {
-            add(person.name, rel.target, "family");
-          } else if (["brother", "sister", "sibling", "spouse", "husband", "wife",
-                      "uncle", "aunt", "cousin", "grandfather", "grandmother"].includes(type)) {
-            add(person.name, rel.target, type);
-          }
+function parseMarkdown(markdown) {
+    state.people.clear();
+
+    const lines = markdown.replace(/\r\n?/g, "\n").split("\n");
+    let current = null;
+
+    for (const rawLine of lines) {
+        const line = rawLine.trim();
+
+        if (!line) continue;
+
+        const heading = line.match(/^#{1,6}\s+(.+?)\s*#*$/);
+
+        if (heading) {
+            const name = heading[1].trim();
+
+            if (/^(family tree|people|records|index)$/i.test(name)) {
+                current = null;
+            } else {
+                current = getPerson(name);
+            }
+
+            continue;
         }
-      }
-      return links;
+
+        if (!current) continue;
+
+        const match = line.match(
+            /^(?:[-*]\s*)?(Parents?|Father|Mother|Sons?|Daughters?|Children|Summary|Description|Biography|Verses?|References?|Location|Place|Dates?|Born|Died|Image|Photo|Portrait)\s*:\s*(.*)$/i
+        );
+
+        if (!match) {
+            current.notes.push(line.replace(/^[-*]\s*/, ""));
+            continue;
+        }
+
+        const key = match[1].toLowerCase();
+        const value = match[2].trim();
+
+        if (/^parents?$/.test(key)) {
+            for (const name of splitNames(value)) {
+                const parent = getPerson(name);
+
+                if (parent && parent.id !== current.id) {
+                    current.parents.add(parent.id);
+                }
+            }
+        } else if (/^(father|mother)$/.test(key)) {
+            const parent = getPerson(value);
+
+            if (parent && parent.id !== current.id) {
+                current.parents.add(parent.id);
+            }
+        } else if (/^sons?$/.test(key)) {
+            for (const name of splitNames(value)) {
+                const child = getPerson(name);
+
+                if (child && child.id !== current.id) {
+                    current.sons.add(child.id);
+                    child.parents.add(current.id);
+                }
+            }
+        } else if (/^daughters?$/.test(key)) {
+            for (const name of splitNames(value)) {
+                const child = getPerson(name);
+
+                if (child && child.id !== current.id) {
+                    current.daughters.add(child.id);
+                    child.parents.add(current.id);
+                }
+            }
+        } else if (/^children$/.test(key)) {
+            for (const name of splitNames(value)) {
+                const child = getPerson(name);
+
+                if (child && child.id !== current.id) {
+                    child.parents.add(current.id);
+                    current.sons.add(child.id);
+                }
+            }
+        } else if (/^(summary|description|biography)$/.test(key)) {
+            current.summary.push(value);
+        } else if (/^(verses?|references?)$/.test(key)) {
+            current.verses.push(...splitNames(value));
+        } else if (/^(location|place)$/.test(key)) {
+            current.location = value;
+        } else if (/^(dates?|born|died)$/.test(key)) {
+            current.dates.push(`${match[1]}: ${value}`);
+        } else if (/^(image|photo|portrait)$/.test(key)) {
+            current.image = value;
+        }
     }
 
-    function calculateDepths(links) {
-      const parentMap = new Map();
-      const childMap = new Map();
+    /*
+      A Parents: entry creates a parent-child link even if that
+      parent didn't list the child in their Sons:/Daughters: field.
+      If the child's sex isn't known, it is placed in a generic
+      descendants branch instead of being invented as a son/daughter.
+    */
+    for (const person of state.people.values()) {
+        for (const parentId of person.parents) {
+            const parent = state.people.get(parentId);
 
-      for (const link of links) {
-        if (link.kind !== "family") continue;
-        const a = link.a.toLowerCase();
-        const b = link.b.toLowerCase();
-        if (!parentMap.has(b)) parentMap.set(b, new Set());
-        parentMap.get(b).add(a);
-        if (!childMap.has(a)) childMap.set(a, new Set());
-        childMap.get(a).add(b);
-      }
+            if (
+                parent &&
+                !parent.sons.has(person.id) &&
+                !parent.daughters.has(person.id)
+            ) {
+                parent.sons.add(person.id);
+            }
+        }
+    }
+}
 
-      const depth = new Map();
-      const visiting = new Set();
+function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[char]);
+}
 
-      function getDepth(key) {
-        if (depth.has(key)) return depth.get(key);
-        if (visiting.has(key)) return 0; // Avoid loops in incomplete or conflicting data.
-        visiting.add(key);
-        const parents = [...(parentMap.get(key) || [])];
-        let value = 0;
-        if (parents.length) value = Math.max(...parents.map(p => getDepth(p) + 1));
-        visiting.delete(key);
-        depth.set(key, value);
-        return value;
-      }
+function initials(name) {
+    return name
+        .split(/\s+/)
+        .slice(0, 2)
+        .map(part => part[0] || "")
+        .join("")
+        .toUpperCase();
+}
 
-      for (const key of people.keys()) getDepth(key);
-      const minDepth = Math.min(0, ...depth.values());
-      for (const [key, value] of depth) depth.set(key, value - minDepth);
+function imageSource(value) {
+    const source = String(value || "").trim();
 
-      // Put unrelated people on the first row.
-      return depth;
+    if (/^(https?:\/\/|data:image\/|blob:)/i.test(source)) {
+        return source;
     }
 
-    function makeNode(person) {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "person-node";
-      button.dataset.person = person.name;
-      button.textContent = person.name;
-      button.addEventListener("click", () => selectPerson(person.name));
-      return button;
+    return "";
+}
+
+function avatarMarkup(person, extraClass = "") {
+    const source = imageSource(person.image);
+
+    if (source) {
+        return `
+            <div class="avatar ${extraClass}">
+                <img src="${escapeHtml(source)}" alt="">
+            </div>
+        `;
     }
 
-    function selectPerson(name) {
-      selectedName = name;
-      document.querySelectorAll(".person-node").forEach(node => {
-        node.classList.toggle("selected", node.dataset.person.toLowerCase() === name.toLowerCase());
-      });
-      const person = people.get(name.toLowerCase());
-      details.hidden = false;
-      detailsName.textContent = person.name;
-      detailsText.textContent = person.relations.length
-        ? person.relations.map(rel => `${rel.type}: ${rel.target}`).join("\n")
-        : "No relationships entered for this person.";
+    return `
+        <div class="avatar ${extraClass}">
+            ${escapeHtml(initials(person.name))}
+        </div>
+    `;
+}
+
+function getRoots() {
+    const roots = [...state.people.values()].filter(person =>
+        ![...person.parents].some(id => state.people.has(id))
+    );
+
+    const priority = person => {
+        if (person.name.toLowerCase() === "adam") return 0;
+        if (person.name.toLowerCase() === "eve") return 1;
+        return 2;
+    };
+
+    return roots.sort((a, b) =>
+        priority(a) - priority(b) ||
+        a.name.localeCompare(b.name)
+    );
+}
+
+function buildForest() {
+    const visited = new Set();
+    const forest = [];
+
+    function buildNode(person, depth = 0) {
+        if (!person || depth > 100 || visited.has(person.id)) {
+            return null;
+        }
+
+        visited.add(person.id);
+
+        const childIds = [
+            ...new Set([...person.sons, ...person.daughters])
+        ]
+            .filter(id => state.people.has(id))
+            .sort((a, b) =>
+                state.people.get(a).name.localeCompare(
+                    state.people.get(b).name
+                )
+            );
+
+        const children = [];
+
+        for (const childId of childIds) {
+            const childNode = buildNode(
+                state.people.get(childId),
+                depth + 1
+            );
+
+            if (childNode) children.push(childNode);
+        }
+
+        return {
+            id: person.id,
+            children
+        };
     }
 
-    function drawConnections() {
-      const stageRect = treeStage.getBoundingClientRect();
-      const width = Math.max(treeStage.scrollWidth, treeStage.clientWidth);
-      const height = Math.max(treeStage.scrollHeight, treeStage.clientHeight);
-      connections.setAttribute("viewBox", `0 0 ${width} ${height}`);
-      connections.setAttribute("width", width);
-      connections.setAttribute("height", height);
-      connections.innerHTML = "";
-
-      const links = deriveParentChildLinks();
-      for (const link of links) {
-        const nodeA = [...document.querySelectorAll(".person-node")]
-          .find(node => node.dataset.person.toLowerCase() === link.a.toLowerCase());
-        const nodeB = [...document.querySelectorAll(".person-node")]
-          .find(node => node.dataset.person.toLowerCase() === link.b.toLowerCase());
-        if (!nodeA || !nodeB) continue;
-
-        const a = nodeA.getBoundingClientRect();
-        const b = nodeB.getBoundingClientRect();
-        const x1 = a.left - stageRect.left + a.width / 2;
-        const y1 = a.top - stageRect.top + a.height / 2;
-        const x2 = b.left - stageRect.left + b.width / 2;
-        const y2 = b.top - stageRect.top + b.height / 2;
-
-        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        const midY = (y1 + y2) / 2;
-        path.setAttribute("d", `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`);
-        path.setAttribute("fill", "none");
-        path.setAttribute("stroke", link.kind === "family" ? "#8b949e" : "#6e9ed6");
-        path.setAttribute("stroke-width", "2");
-        path.setAttribute("stroke-linecap", "round");
-        if (link.kind !== "family") path.setAttribute("stroke-dasharray", "5 5");
-        connections.appendChild(path);
-      }
+    for (const root of getRoots()) {
+        const node = buildNode(root);
+        if (node) forest.push(node);
     }
 
-    function renderTree() {
-      parseInput(input.value);
-      treeLevels.innerHTML = "";
-      connections.innerHTML = "";
-      details.hidden = true;
-      selectedName = null;
+    /*
+      Disconnected records are still displayed. This is useful when
+      the Markdown file has not yet documented someone's ancestors.
+    */
+    for (const person of [...state.people.values()].sort((a, b) =>
+        a.name.localeCompare(b.name)
+    )) {
+        if (!visited.has(person.id)) {
+            const node = buildNode(person);
+            if (node) forest.push(node);
+        }
+    }
 
-      if (people.size === 0) {
-        treeCanvas.hidden = true;
-        emptyState.hidden = false;
-        treeCount.textContent = "0 people";
-        statusEl.textContent = "Enter at least one line in the format: Name: Person";
+    return forest;
+}
+
+function createPersonCard(person, childCount) {
+    const button = document.createElement("button");
+
+    button.type = "button";
+    button.className = "person-card";
+    button.dataset.personId = person.id;
+
+    button.innerHTML = `
+        ${avatarMarkup(person)}
+        <div class="card-text">
+            <div class="card-name">${escapeHtml(person.name)}</div>
+            <div class="card-subtitle">
+                ${childCount
+                    ? `${childCount} descendant${childCount === 1 ? "" : "s"} below`
+                    : "Person record"}
+            </div>
+        </div>
+    `;
+
+    button.addEventListener("click", () => {
+        selectPerson(person.id);
+
+        if (window.matchMedia("(max-width: 720px)").matches) {
+            document.body.classList.add("mobile-details");
+        }
+    });
+
+    return button;
+}
+
+function renderTree() {
+    const layer = $("#nodesLayer");
+    const svg = $("#connectors");
+
+    layer.innerHTML = "";
+    svg.innerHTML = "";
+
+    if (!state.people.size) {
+        layer.innerHTML = `
+            <div class="empty-state">
+                <h2>Your family tree will appear here</h2>
+                <p>Open a Markdown file or load the demo.</p>
+                <p>Person headings and fields like
+                <b>Sons:</b>, <b>Daughters:</b>, <b>Parents:</b>,
+                <b>Summary:</b> and <b>Verses:</b> are supported.</p>
+                <p>People are deduplicated by name. Connections represent
+                parent-to-child relationships only.</p>
+            </div>
+        `;
+
+        $("#treeStatus").textContent = "No people loaded";
+        renderPeopleList();
         return;
-      }
-
-      const links = deriveParentChildLinks();
-      const depths = calculateDepths(links);
-      const maxDepth = Math.max(0, ...depths.values());
-      const levels = Array.from({ length: maxDepth + 1 }, () => []);
-
-      for (const person of people.values()) {
-        const depth = depths.get(person.name.toLowerCase()) || 0;
-        levels[Math.min(depth, levels.length - 1)].push(person);
-      }
-
-      for (const levelPeople of levels) {
-        const row = document.createElement("div");
-        row.className = "tree-level";
-        for (const person of levelPeople) row.appendChild(makeNode(person));
-        treeLevels.appendChild(row);
-      }
-
-      treeCanvas.hidden = false;
-      emptyState.hidden = true;
-      treeCount.textContent = `${people.size} ${people.size === 1 ? "person" : "people"}`;
-      statusEl.textContent = "Tree drawn. Click any person to view their entered relationships.";
-
-      requestAnimationFrame(() => requestAnimationFrame(drawConnections));
-      if (resizeObserver) resizeObserver.disconnect();
-      resizeObserver = new ResizeObserver(() => requestAnimationFrame(drawConnections));
-      resizeObserver.observe(treeStage);
     }
 
-    drawButton.addEventListener("click", renderTree);
-    exampleButton.addEventListener("click", () => {
-      input.value = example;
-      renderTree();
+    const forest = buildForest();
+    const topRow = document.createElement("div");
+
+    topRow.className = "generation";
+
+    function layoutNode(node) {
+        const person = state.people.get(node.id);
+        const unit = document.createElement("div");
+
+        unit.className = "family-unit";
+        unit.dataset.personId = node.id;
+
+        unit.appendChild(createPersonCard(person, node.children.length));
+
+        if (node.children.length) {
+            const childRow = document.createElement("div");
+
+            childRow.className = "children-row";
+            childRow.dataset.parentId = node.id;
+
+            for (const child of node.children) {
+                childRow.appendChild(layoutNode(child));
+            }
+
+            unit.appendChild(childRow);
+        }
+
+        return unit;
+    }
+
+    for (const root of forest) {
+        topRow.appendChild(layoutNode(root));
+    }
+
+    layer.appendChild(topRow);
+
+    $("#treeCanvas").style.zoom = String(state.zoom);
+
+    requestAnimationFrame(drawConnectors);
+    renderPeopleList();
+
+    $("#treeStatus").textContent =
+        `${state.people.size} people · descendants only`;
+}
+
+function drawConnectors() {
+    const canvas = $("#treeCanvas");
+    const svg = $("#connectors");
+
+    if (!canvas || !svg) return;
+
+    const canvasRect = canvas.getBoundingClientRect();
+    const width = Math.max(canvas.scrollWidth, canvasRect.width);
+    const height = Math.max(canvas.scrollHeight, canvasRect.height);
+
+    svg.setAttribute("width", width);
+    svg.setAttribute("height", height);
+    svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+    svg.style.width = `${width}px`;
+    svg.style.height = `${height}px`;
+    svg.innerHTML = "";
+
+    const ns = "http://www.w3.org/2000/svg";
+
+    document.querySelectorAll(".family-unit").forEach(unit => {
+        const parentCard = unit.querySelector(":scope > .person-card");
+        const childRow = unit.querySelector(":scope > .children-row");
+
+        if (!parentCard || !childRow) return;
+
+        const parentRect = parentCard.getBoundingClientRect();
+        const children = [
+            ...childRow.querySelectorAll(
+                ":scope > .family-unit > .person-card"
+            )
+        ];
+
+        if (!children.length) return;
+
+        const parentX =
+            (parentRect.left + parentRect.width / 2 - canvasRect.left) /
+            state.zoom;
+
+        const parentY =
+            (parentRect.bottom - canvasRect.top) / state.zoom;
+
+        const childRects = children.map(child =>
+            child.getBoundingClientRect()
+        );
+
+        const childXs = childRects.map(rect =>
+            (rect.left + rect.width / 2 - canvasRect.left) / state.zoom
+        );
+
+        const childTop = Math.min(...childRects.map(rect =>
+            (rect.top - canvasRect.top) / state.zoom
+        ));
+
+        const middleY = parentY + (childTop - parentY) / 2;
+
+        let pathData;
+
+        if (childXs.length === 1) {
+            pathData = `M ${parentX} ${parentY} V ${childTop}`;
+        } else {
+            pathData =
+                `M ${parentX} ${parentY} V ${middleY} ` +
+                `M ${Math.min(...childXs)} ${middleY} ` +
+                `H ${Math.max(...childXs)} ` +
+                childXs.map(x =>
+                    `M ${x} ${middleY} V ${childTop}`
+                ).join(" ");
+        }
+
+        const path = document.createElementNS(ns, "path");
+
+        path.setAttribute("d", pathData);
+        path.setAttribute("fill", "none");
+        path.setAttribute("stroke", "var(--line)");
+        path.setAttribute("stroke-width", "1.5");
+        path.setAttribute("stroke-linecap", "round");
+        path.setAttribute("stroke-linejoin", "round");
+
+        svg.appendChild(path);
     });
-    clearButton.addEventListener("click", () => {
-      input.value = "";
-      renderTree();
-      statusEl.textContent = "Cleared. Enter your family tree data on the left.";
+}
+
+function renderPeopleList(filter = $("#search").value || "") {
+    const list = $("#peopleList");
+    const query = normalizeName(filter);
+
+    list.innerHTML = "";
+
+    const people = [...state.people.values()]
+        .filter(person => person.name.toLowerCase().includes(query))
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+    for (const person of people) {
+        const button = document.createElement("button");
+
+        button.type = "button";
+        button.className = "person-row";
+        button.dataset.personId = person.id;
+
+        const parentNames = [...person.parents]
+            .map(id => state.people.get(id)?.name)
+            .filter(Boolean);
+
+        button.innerHTML = `
+            ${avatarMarkup(person)}
+            <div class="person-label">
+                <div class="person-name">${escapeHtml(person.name)}</div>
+                <div class="person-meta">
+                    ${escapeHtml(parentNames.join(", ") || "Parent not recorded")}
+                </div>
+            </div>
+        `;
+
+        button.addEventListener("click", () => {
+            selectPerson(person.id);
+
+            if (window.matchMedia("(max-width: 720px)").matches) {
+                document.body.classList.add("mobile-details");
+            }
+        });
+
+        list.appendChild(button);
+    }
+
+    if (!people.length) {
+        list.innerHTML = `
+            <div class="detail-empty" style="padding:12px">
+                No matching people.
+            </div>
+        `;
+    }
+}
+
+function addDetailSection(container, title, html) {
+    const section = document.createElement("section");
+
+    section.className = "detail-section";
+    section.innerHTML = `
+        <h3>${escapeHtml(title)}</h3>
+        ${html}
+    `;
+
+    container.appendChild(section);
+}
+
+function makeList(items) {
+    if (!items.length) return "<p>Not recorded</p>";
+
+    return `<ul>${items.map(item =>
+        `<li>${escapeHtml(item)}</li>`
+    ).join("")}</ul>`;
+}
+
+function selectPerson(id) {
+    const person = state.people.get(id);
+
+    if (!person) return;
+
+    state.selectedId = id;
+
+    document.querySelectorAll(".person-card").forEach(card => {
+        card.classList.toggle("selected", card.dataset.personId === id);
     });
 
-    // Keep line geometry aligned after viewport resizing.
-    window.addEventListener("resize", () => requestAnimationFrame(drawConnections));
+    document.querySelectorAll(".person-row").forEach(row => {
+        row.classList.toggle("selected", row.dataset.personId === id);
+    });
+
+    renderDetails(person);
+    renderPeopleList();
+}
+
+function renderDetails(person) {
+    const container = $("#detailsContent");
+
+    container.innerHTML = `
+        ${avatarMarkup(person, "detail-avatar")}
+        <div class="detail-name">${escapeHtml(person.name)}</div>
+        <div class="detail-type">Biblical person · family tree record</div>
+    `;
+
+    const parents = [...person.parents]
+        .map(id => state.people.get(id)?.name)
+        .filter(Boolean);
+
+    const sons = [...person.sons]
+        .map(id => state.people.get(id)?.name)
+        .filter(Boolean);
+
+    const daughters = [...person.daughters]
+        .map(id => state.people.get(id)?.name)
+        .filter(Boolean);
+
+    addDetailSection(container, "Parents", makeList(parents));
+    addDetailSection(container, "Sons", makeList(sons));
+    addDetailSection(container, "Daughters", makeList(daughters));
+
+    if (person.summary.length) {
+        addDetailSection(
+            container,
+            "Summary",
+            `<p>${person.summary.map(escapeHtml).join("<br>")}</p>`
+        );
+    }
+
+    if (person.verses.length) {
+        addDetailSection(
+            container,
+            "Bible references",
+            makeList(person.verses)
+        );
+    }
+
+    if (person.location) {
+        addDetailSection(
+            container,
+            "Location",
+            `<p>${escapeHtml(person.location)}</p>`
+        );
+    }
+
+    if (person.dates.length) {
+        addDetailSection(
+            container,
+            "Dates / timeline",
+            makeList(person.dates)
+        );
+    }
+
+    if (person.notes.length) {
+        addDetailSection(
+            container,
+            "Notes",
+            makeList(person.notes)
+        );
+    }
+
+    if (person.image && !imageSource(person.image)) {
+        addDetailSection(
+            container,
+            "Portrait",
+            `<p>${escapeHtml(person.image)}</p>
+             <p>Use an https:// image URL to display a portrait.</p>`
+        );
+    }
+}
+
+function loadMarkdown(markdown, filename = "Markdown file") {
+    parseMarkdown(markdown);
+
+    state.selectedId = null;
 
     renderTree();
-  </script>
+
+    $("#detailsContent").innerHTML = `
+        <div class="detail-empty">
+            Loaded <b>${escapeHtml(filename)}</b>.<br>
+            Select a person in the tree or list to see their details.
+        </div>
+    `;
+}
+
+$("#mdFile").addEventListener("change", async event => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    try {
+        const markdown = await file.text();
+        loadMarkdown(markdown, file.name);
+    } catch (error) {
+        alert("Could not read the file: " + error.message);
+    }
+});
+
+$("#demoButton").addEventListener("click", () => {
+    loadMarkdown(DEMO_MARKDOWN, "Built-in demo");
+});
+
+$("#resetButton").addEventListener("click", () => {
+    state.zoom = 1;
+    renderTree();
+
+    $("#treeViewport").scrollTo({
+        left: 0,
+        top: 0,
+        behavior: "smooth"
+    });
+});
+
+$("#zoomIn").addEventListener("click", () => {
+    state.zoom = Math.min(1.7, state.zoom + 0.1);
+    renderTree();
+});
+
+$("#zoomOut").addEventListener("click", () => {
+    state.zoom = Math.max(0.5, state.zoom - 0.1);
+    renderTree();
+});
+
+$("#fitButton").addEventListener("click", () => {
+    const viewport = $("#treeViewport");
+    const canvas = $("#treeCanvas");
+
+    const available = (viewport.clientWidth - 60) /
+        Math.max(1, canvas.scrollWidth / state.zoom);
+
+    state.zoom = Math.max(0.5, Math.min(1, available));
+
+    renderTree();
+
+    viewport.scrollTo({
+        left: 0,
+        top: 0,
+        behavior: "smooth"
+    });
+});
+
+$("#search").addEventListener("input", event => {
+    renderPeopleList(event.target.value);
+});
+
+$("#showPeople").addEventListener("click", () => {
+    document.body.classList.remove("mobile-tree", "mobile-details");
+});
+
+$("#backToTree").addEventListener("click", () => {
+    document.body.classList.remove("mobile-details");
+    document.body.classList.add("mobile-tree");
+});
+
+$("#treeViewport").addEventListener("scroll", () => {
+    requestAnimationFrame(drawConnectors);
+});
+
+window.addEventListener("resize", () => {
+    requestAnimationFrame(drawConnectors);
+});
+
+/* Start with an empty viewer. */
+loadMarkdown("", "No file loaded");
+</script>
+
 </body>
 </html>
