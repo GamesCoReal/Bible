@@ -43,9 +43,10 @@ header {
     justify-content: space-between;
     align-items: center;
     gap: 12px;
-    padding: 12px 16px;
+    padding: 10px 16px;
     background: var(--panel);
     border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
 }
 
 h1 {
@@ -90,111 +91,22 @@ input[type="file"] {
     display: none;
 }
 
+/* The tree and About sections are stacked vertically. */
 .workspace {
     display: flex;
     flex: 1;
-    min-height: 0;
-}
-
-aside {
-    width: 240px;
-    flex: 0 0 240px;
-    display: flex;
     flex-direction: column;
     min-height: 0;
-    background: var(--panel);
-    border-right: 1px solid var(--border);
-}
-
-.side-heading {
-    padding: 14px;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: .08em;
-}
-
-.search-wrap {
-    padding: 0 10px 10px;
-}
-
-#search {
-    width: 100%;
-    padding: 9px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--bg);
-    color: var(--text);
-    font: inherit;
-    font-size: 13px;
-}
-
-#peopleList {
-    overflow: auto;
-    padding: 0 8px 12px;
-}
-
-.person-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    margin: 2px 0;
-    padding: 9px;
-    text-align: left;
-    border-color: transparent;
-    background: transparent;
-}
-
-.person-row.selected {
-    background: #1c2b21;
-    border-color: #315b3b;
-}
-
-.avatar {
-    flex: 0 0 36px;
-    width: 36px;
-    height: 36px;
-    display: grid;
-    place-items: center;
     overflow: hidden;
-    border: 1px solid var(--border);
-    border-radius: 50%;
-    background: var(--card);
-    color: var(--accent);
-    font-size: 12px;
-    font-weight: 700;
-}
-
-.avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.person-label {
-    min-width: 0;
-}
-
-.person-name {
-    font-size: 13px;
-    font-weight: 600;
-    overflow-wrap: anywhere;
-}
-
-.person-meta {
-    color: var(--muted);
-    font-size: 11px;
-    margin-top: 3px;
 }
 
 main {
-    flex: 1;
     display: flex;
+    flex: 0 0 55%;
     flex-direction: column;
     min-width: 0;
     min-height: 0;
+    border-bottom: 1px solid var(--border);
 }
 
 .tree-toolbar {
@@ -203,8 +115,10 @@ main {
     align-items: center;
     flex-wrap: wrap;
     gap: 10px;
-    padding: 10px 14px;
+    padding: 8px 12px;
+    background: var(--panel);
     border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
 }
 
 .tree-status {
@@ -215,6 +129,10 @@ main {
 .tree-actions {
     display: flex;
     gap: 6px;
+}
+
+.tree-actions button {
+    min-width: 34px;
 }
 
 #treeViewport {
@@ -231,7 +149,7 @@ main {
     width: max-content;
     min-width: 100%;
     min-height: 100%;
-    padding: 42px 50px 70px;
+    padding: 35px 40px 60px;
     transform-origin: top left;
 }
 
@@ -267,8 +185,8 @@ main {
     align-items: center;
     gap: 10px;
     width: 164px;
-    min-height: 82px;
-    padding: 11px;
+    min-height: 76px;
+    padding: 10px;
     border: 1px solid var(--border);
     border-radius: 12px;
     background: var(--panel);
@@ -308,12 +226,12 @@ main {
     justify-content: center;
     align-items: flex-start;
     gap: 22px;
-    margin-top: 54px;
+    margin-top: 48px;
 }
 
 .empty-state {
     max-width: 520px;
-    margin: 65px auto;
+    margin: 40px auto;
     padding: 24px;
     text-align: center;
     color: var(--muted);
@@ -327,19 +245,25 @@ main {
     font-size: 17px;
 }
 
+/* About occupies the lower part of the screen. */
 .details {
-    width: 300px;
-    flex: 0 0 300px;
     display: flex;
+    flex: 1 1 45%;
     flex-direction: column;
+    min-width: 0;
     min-height: 0;
-    background: var(--panel);
-    border-left: 1px solid var(--border);
+    background: var(--bg);
 }
 
 .details-heading {
-    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: var(--panel);
     border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
 }
 
 .details-heading h2 {
@@ -352,10 +276,37 @@ main {
     overflow: auto;
 }
 
+.detail-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.avatar {
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: var(--card);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 .detail-avatar {
+    flex-basis: 64px;
     width: 64px;
     height: 64px;
-    margin-bottom: 12px;
 }
 
 .detail-name {
@@ -370,10 +321,19 @@ main {
     margin-top: 5px;
 }
 
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+}
+
 .detail-section {
-    margin-top: 17px;
-    padding-top: 13px;
-    border-top: 1px solid var(--border);
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--panel);
 }
 
 .detail-section h3 {
@@ -406,33 +366,9 @@ main {
     line-height: 1.6;
 }
 
-.mobile-only {
-    display: none;
-}
-
-@media (max-width: 1000px) {
-    aside {
-        width: 205px;
-        flex-basis: 205px;
-    }
-
-    .details {
-        width: 255px;
-        flex-basis: 255px;
-    }
-
-    .person-card {
-        width: 145px;
-    }
-
-    .generation {
-        gap: 18px;
-    }
-}
-
 @media (max-width: 720px) {
     header {
-        padding: 10px;
+        padding: 9px 10px;
         align-items: flex-start;
     }
 
@@ -441,57 +377,49 @@ main {
     }
 
     .subtitle {
-        max-width: 170px;
+        max-width: 150px;
         line-height: 1.4;
+    }
+
+    .toolbar {
+        gap: 5px;
+        justify-content: flex-end;
     }
 
     .toolbar button,
     .file-label {
-        padding: 7px 8px;
+        padding: 7px;
+        font-size: 11px;
+    }
+
+    main {
+        flex-basis: 52%;
+    }
+
+    .details {
+        flex-basis: 48%;
+    }
+
+    .tree-toolbar {
+        padding: 7px;
+        gap: 6px;
+    }
+
+    .tree-status {
+        font-size: 10px;
+    }
+
+    .tree-actions {
+        gap: 4px;
+    }
+
+    .tree-actions button {
+        padding: 6px 8px;
         font-size: 12px;
     }
 
-    aside {
-        width: 100%;
-        flex: 1;
-        border-right: 0;
-    }
-
-    main,
-    .details {
-        display: none;
-    }
-
-    body.mobile-tree main {
-        display: flex;
-        position: absolute;
-        inset: 0;
-        z-index: 3;
-        background: var(--bg);
-    }
-
-    body.mobile-details .details {
-        display: flex;
-        position: absolute;
-        inset: 0;
-        z-index: 4;
-        width: 100%;
-        border-left: 0;
-    }
-
-    body.mobile-tree aside,
-    body.mobile-tree .details,
-    body.mobile-details aside,
-    body.mobile-details main {
-        display: none;
-    }
-
-    .mobile-only {
-        display: inline-block;
-    }
-
     #treeCanvas {
-        padding: 30px 24px 60px;
+        padding: 25px 20px 45px;
     }
 
     .generation {
@@ -500,15 +428,56 @@ main {
 
     .children-row {
         gap: 14px;
-        margin-top: 42px;
+        margin-top: 38px;
     }
 
     .person-card {
-        width: 145px;
+        width: 140px;
+        min-height: 68px;
+        gap: 7px;
+        padding: 8px;
     }
 
-    .tree-toolbar {
-        padding: 8px;
+    .person-card .avatar {
+        flex-basis: 32px;
+        width: 32px;
+        height: 32px;
+    }
+
+    .card-name {
+        font-size: 12px;
+    }
+
+    .card-subtitle {
+        font-size: 9px;
+    }
+
+    .details-heading {
+        padding: 9px 12px;
+    }
+
+    .details-content {
+        padding: 12px;
+    }
+
+    .detail-avatar {
+        flex-basis: 48px;
+        width: 48px;
+        height: 48px;
+    }
+
+    .detail-name {
+        font-size: 19px;
+    }
+
+    .detail-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .detail-section {
+        padding: 10px;
     }
 }
 </style>
@@ -519,35 +488,27 @@ main {
 <header>
     <div>
         <h1>Bible Family Tree</h1>
-        <div class="subtitle">Descendants only · Select a person for details</div>
+        <div class="subtitle">Select a person in the tree to learn about them</div>
     </div>
 
     <div class="toolbar">
         <label class="file-label" for="mdFile">Open .md</label>
         <input id="mdFile" type="file" accept=".md,.markdown,.txt">
         <button id="demoButton">Load demo</button>
-        <button id="resetButton">Reset view</button>
+        <button id="resetButton">Reset</button>
     </div>
 </header>
 
 <div class="workspace">
 
-    <aside>
-        <div class="side-heading">People</div>
-        <div class="search-wrap">
-            <input id="search" type="search" placeholder="Search people…">
-        </div>
-        <div id="peopleList"></div>
-    </aside>
-
     <main>
         <div class="tree-toolbar">
             <div id="treeStatus" class="tree-status">No file loaded</div>
+
             <div class="tree-actions">
-                <button id="zoomOut" title="Zoom out">−</button>
-                <button id="zoomIn" title="Zoom in">+</button>
+                <button id="zoomOut" title="Zoom out" aria-label="Zoom out">−</button>
+                <button id="zoomIn" title="Zoom in" aria-label="Zoom in">+</button>
                 <button id="fitButton">Fit tree</button>
-                <button id="showPeople" class="mobile-only">People</button>
             </div>
         </div>
 
@@ -561,17 +522,15 @@ main {
 
     <section class="details">
         <div class="details-heading">
-            <h2>Person details</h2>
+            <h2>About</h2>
+            <span id="aboutStatus" class="tree-status">No person selected</span>
         </div>
 
         <div id="detailsContent" class="details-content">
             <div class="detail-empty">
-                Open a Markdown file or load the demo, then select a person.
+                Open your Markdown file, then select a person in the family tree.
+                Their family information and Bible references will appear here.
             </div>
-        </div>
-
-        <div style="padding: 0 16px 14px">
-            <button id="backToTree" class="mobile-only">Back to tree</button>
         </div>
     </section>
 
@@ -638,10 +597,7 @@ function cleanName(name) {
 function getPerson(name) {
     const clean = cleanName(name);
 
-    if (
-        !clean ||
-        /^(unknown|unnamed|none|n\/a)$/i.test(clean)
-    ) {
+    if (!clean || /^(unknown|unnamed|none|n\/a)$/i.test(clean)) {
         return null;
     }
 
@@ -749,8 +705,8 @@ function parseMarkdown(markdown) {
                 const child = getPerson(name);
 
                 if (child && child.id !== current.id) {
-                    child.parents.add(current.id);
                     current.sons.add(child.id);
+                    child.parents.add(current.id);
                 }
             }
         } else if (/^(summary|description|biography)$/.test(key)) {
@@ -766,12 +722,7 @@ function parseMarkdown(markdown) {
         }
     }
 
-    /*
-      A Parents: entry creates a parent-child link even if that
-      parent didn't list the child in their Sons:/Daughters: field.
-      If the child's sex isn't known, it is placed in a generic
-      descendants branch instead of being invented as a son/daughter.
-    */
+    // Add reverse links so Parents: entries also appear in the tree.
     for (const person of state.people.values()) {
         for (const parentId of person.parents) {
             const parent = state.people.get(parentId);
@@ -894,10 +845,7 @@ function buildForest() {
         if (node) forest.push(node);
     }
 
-    /*
-      Disconnected records are still displayed. This is useful when
-      the Markdown file has not yet documented someone's ancestors.
-    */
+    // Also show records whose ancestors have not been recorded.
     for (const person of [...state.people.values()].sort((a, b) =>
         a.name.localeCompare(b.name)
     )) {
@@ -916,6 +864,7 @@ function createPersonCard(person, childCount) {
     button.type = "button";
     button.className = "person-card";
     button.dataset.personId = person.id;
+    button.setAttribute("aria-label", `About ${person.name}`);
 
     button.innerHTML = `
         ${avatarMarkup(person)}
@@ -923,7 +872,7 @@ function createPersonCard(person, childCount) {
             <div class="card-name">${escapeHtml(person.name)}</div>
             <div class="card-subtitle">
                 ${childCount
-                    ? `${childCount} descendant${childCount === 1 ? "" : "s"} below`
+                    ? `${childCount} child${childCount === 1 ? "" : "ren"}`
                     : "Person record"}
             </div>
         </div>
@@ -931,10 +880,6 @@ function createPersonCard(person, childCount) {
 
     button.addEventListener("click", () => {
         selectPerson(person.id);
-
-        if (window.matchMedia("(max-width: 720px)").matches) {
-            document.body.classList.add("mobile-details");
-        }
     });
 
     return button;
@@ -951,17 +896,16 @@ function renderTree() {
         layer.innerHTML = `
             <div class="empty-state">
                 <h2>Your family tree will appear here</h2>
-                <p>Open a Markdown file or load the demo.</p>
-                <p>Person headings and fields like
-                <b>Sons:</b>, <b>Daughters:</b>, <b>Parents:</b>,
-                <b>Summary:</b> and <b>Verses:</b> are supported.</p>
-                <p>People are deduplicated by name. Connections represent
-                parent-to-child relationships only.</p>
+                <p>Open your Markdown file or load the demo.</p>
+                <p>Use headings for people's names and fields such as
+                <b>Parents:</b>, <b>Sons:</b>, <b>Daughters:</b>,
+                <b>Summary:</b> and <b>Verses:</b>.</p>
             </div>
         `;
 
         $("#treeStatus").textContent = "No people loaded";
-        renderPeopleList();
+        $("#aboutStatus").textContent = "No person selected";
+
         return;
     }
 
@@ -1003,11 +947,14 @@ function renderTree() {
 
     $("#treeCanvas").style.zoom = String(state.zoom);
 
-    requestAnimationFrame(drawConnectors);
-    renderPeopleList();
-
     $("#treeStatus").textContent =
         `${state.people.size} people · descendants only`;
+
+    requestAnimationFrame(drawConnectors);
+
+    if (state.selectedId && state.people.has(state.selectedId)) {
+        updateSelectedCard();
+    }
 }
 
 function drawConnectors() {
@@ -1036,6 +983,7 @@ function drawConnectors() {
         if (!parentCard || !childRow) return;
 
         const parentRect = parentCard.getBoundingClientRect();
+
         const children = [
             ...childRow.querySelectorAll(
                 ":scope > .family-unit > .person-card"
@@ -1092,55 +1040,13 @@ function drawConnectors() {
     });
 }
 
-function renderPeopleList(filter = $("#search").value || "") {
-    const list = $("#peopleList");
-    const query = normalizeName(filter);
-
-    list.innerHTML = "";
-
-    const people = [...state.people.values()]
-        .filter(person => person.name.toLowerCase().includes(query))
-        .sort((a, b) => a.name.localeCompare(b.name));
-
-    for (const person of people) {
-        const button = document.createElement("button");
-
-        button.type = "button";
-        button.className = "person-row";
-        button.dataset.personId = person.id;
-
-        const parentNames = [...person.parents]
-            .map(id => state.people.get(id)?.name)
-            .filter(Boolean);
-
-        button.innerHTML = `
-            ${avatarMarkup(person)}
-            <div class="person-label">
-                <div class="person-name">${escapeHtml(person.name)}</div>
-                <div class="person-meta">
-                    ${escapeHtml(parentNames.join(", ") || "Parent not recorded")}
-                </div>
-            </div>
-        `;
-
-        button.addEventListener("click", () => {
-            selectPerson(person.id);
-
-            if (window.matchMedia("(max-width: 720px)").matches) {
-                document.body.classList.add("mobile-details");
-            }
-        });
-
-        list.appendChild(button);
-    }
-
-    if (!people.length) {
-        list.innerHTML = `
-            <div class="detail-empty" style="padding:12px">
-                No matching people.
-            </div>
-        `;
-    }
+function updateSelectedCard() {
+    document.querySelectorAll(".person-card").forEach(card => {
+        card.classList.toggle(
+            "selected",
+            card.dataset.personId === state.selectedId
+        );
+    });
 }
 
 function addDetailSection(container, title, html) {
@@ -1163,33 +1069,21 @@ function makeList(items) {
     ).join("")}</ul>`;
 }
 
-function selectPerson(id) {
-    const person = state.people.get(id);
-
-    if (!person) return;
-
-    state.selectedId = id;
-
-    document.querySelectorAll(".person-card").forEach(card => {
-        card.classList.toggle("selected", card.dataset.personId === id);
-    });
-
-    document.querySelectorAll(".person-row").forEach(row => {
-        row.classList.toggle("selected", row.dataset.personId === id);
-    });
-
-    renderDetails(person);
-    renderPeopleList();
-}
-
 function renderDetails(person) {
     const container = $("#detailsContent");
 
     container.innerHTML = `
-        ${avatarMarkup(person, "detail-avatar")}
-        <div class="detail-name">${escapeHtml(person.name)}</div>
-        <div class="detail-type">Biblical person · family tree record</div>
+        <div class="detail-top">
+            ${avatarMarkup(person, "detail-avatar")}
+            <div>
+                <div class="detail-name">${escapeHtml(person.name)}</div>
+                <div class="detail-type">Biblical person</div>
+            </div>
+        </div>
+        <div id="detailGrid" class="detail-grid"></div>
     `;
+
+    const grid = $("#detailGrid");
 
     const parents = [...person.parents]
         .map(id => state.people.get(id)?.name)
@@ -1203,21 +1097,21 @@ function renderDetails(person) {
         .map(id => state.people.get(id)?.name)
         .filter(Boolean);
 
-    addDetailSection(container, "Parents", makeList(parents));
-    addDetailSection(container, "Sons", makeList(sons));
-    addDetailSection(container, "Daughters", makeList(daughters));
+    addDetailSection(grid, "Parents", makeList(parents));
+    addDetailSection(grid, "Sons", makeList(sons));
+    addDetailSection(grid, "Daughters", makeList(daughters));
 
     if (person.summary.length) {
         addDetailSection(
-            container,
-            "Summary",
+            grid,
+            "About this person",
             `<p>${person.summary.map(escapeHtml).join("<br>")}</p>`
         );
     }
 
     if (person.verses.length) {
         addDetailSection(
-            container,
+            grid,
             "Bible references",
             makeList(person.verses)
         );
@@ -1225,7 +1119,7 @@ function renderDetails(person) {
 
     if (person.location) {
         addDetailSection(
-            container,
+            grid,
             "Location",
             `<p>${escapeHtml(person.location)}</p>`
         );
@@ -1233,7 +1127,7 @@ function renderDetails(person) {
 
     if (person.dates.length) {
         addDetailSection(
-            container,
+            grid,
             "Dates / timeline",
             makeList(person.dates)
         );
@@ -1241,7 +1135,7 @@ function renderDetails(person) {
 
     if (person.notes.length) {
         addDetailSection(
-            container,
+            grid,
             "Notes",
             makeList(person.notes)
         );
@@ -1249,25 +1143,44 @@ function renderDetails(person) {
 
     if (person.image && !imageSource(person.image)) {
         addDetailSection(
-            container,
+            grid,
             "Portrait",
             `<p>${escapeHtml(person.image)}</p>
              <p>Use an https:// image URL to display a portrait.</p>`
         );
     }
+
+    $("#aboutStatus").textContent = person.name;
+}
+
+function selectPerson(id) {
+    const person = state.people.get(id);
+
+    if (!person) return;
+
+    state.selectedId = id;
+
+    updateSelectedCard();
+    renderDetails(person);
 }
 
 function loadMarkdown(markdown, filename = "Markdown file") {
     parseMarkdown(markdown);
 
     state.selectedId = null;
+    state.zoom = 1;
+
+    $("#treeViewport").scrollTo({ left: 0, top: 0 });
 
     renderTree();
 
+    $("#aboutStatus").textContent = "No person selected";
+
     $("#detailsContent").innerHTML = `
         <div class="detail-empty">
-            Loaded <b>${escapeHtml(filename)}</b>.<br>
-            Select a person in the tree or list to see their details.
+            Loaded <b>${escapeHtml(filename)}</b>.<br><br>
+            Select a person in the tree to see their family information
+            and Bible references here.
         </div>
     `;
 }
@@ -1283,6 +1196,9 @@ $("#mdFile").addEventListener("change", async event => {
     } catch (error) {
         alert("Could not read the file: " + error.message);
     }
+
+    // Allows the same file to be selected again.
+    event.target.value = "";
 });
 
 $("#demoButton").addEventListener("click", () => {
@@ -1291,6 +1207,7 @@ $("#demoButton").addEventListener("click", () => {
 
 $("#resetButton").addEventListener("click", () => {
     state.zoom = 1;
+
     renderTree();
 
     $("#treeViewport").scrollTo({
@@ -1314,10 +1231,11 @@ $("#fitButton").addEventListener("click", () => {
     const viewport = $("#treeViewport");
     const canvas = $("#treeCanvas");
 
-    const available = (viewport.clientWidth - 60) /
+    const available =
+        (viewport.clientWidth - 40) /
         Math.max(1, canvas.scrollWidth / state.zoom);
 
-    state.zoom = Math.max(0.5, Math.min(1, available));
+    state.zoom = Math.max(0.3, Math.min(1, available));
 
     renderTree();
 
@@ -1326,19 +1244,6 @@ $("#fitButton").addEventListener("click", () => {
         top: 0,
         behavior: "smooth"
     });
-});
-
-$("#search").addEventListener("input", event => {
-    renderPeopleList(event.target.value);
-});
-
-$("#showPeople").addEventListener("click", () => {
-    document.body.classList.remove("mobile-tree", "mobile-details");
-});
-
-$("#backToTree").addEventListener("click", () => {
-    document.body.classList.remove("mobile-details");
-    document.body.classList.add("mobile-tree");
 });
 
 $("#treeViewport").addEventListener("scroll", () => {
