@@ -419,122 +419,111 @@ function splitNames(value) {
 
 function parseMarkdown(markdown) {
     const lines = markdown.replace(/^\uFEFF/, "").split(/\r?\n/);
-    const sections = [];
+    const people = [];
     let current = null;
 
     for (const originalLine of lines) {
         const line = originalLine.trim();
 
-        // A single # starts a person heading in your Markdown file.
+        // Ignore the main document title.
+        if (/^#\s+FAMILY TREE\s*$/i.test(line)) {
+            current = null;
+            continue;
+        }
+
+        // Each single-hash heading represents one person.
         const heading = line.match(/^#\s+(.+?)\s*#*\s*$/);
 
         if (heading) {
-            const name = cleanValue(heading[1]);
-
-            if (/^family tree$/i.test(name)) {
-                current = null;
-                continue;
-            }
-
             current = {
-                name,
-                key: normalizeName(name),
+                name: heading[1].trim(),
+                key: normalizeName(heading[1]),
                 fields: {},
-                notes: []
+                notes: [],
+                parents: []
             };
 
-            sections.push(current);
+            people.push(current);
             continue;
         }
 
         if (!current || !line) continue;
 
-        // Read entries such as Parents: Adam, Eve and Summary: ...
-        const fieldMatch = line.match(/^(?:[-*+]\s*)?([^:]+?)\s*:\s*(.*?)\s*$/);
+        // Read fields such as Parents: Adam, Eve or Summary: ...
+        const fieldMatch = line.match(/^([^:]+?)\s*:\s*(.*?)\s*$/);
 
         if (fieldMatch) {
-            const key = cleanValue(fieldMatch[1])
-                .replace(/[_-]+/g, " ")
+            const key = fieldMatch[1]
                 .trim()
-                .toLocaleLowerCase();
+                .toLowerCase()
+                .replace(/[_-]+/g, " ");
 
-            const value = cleanValue(fieldMatch[2]);
+            const value = fieldMatch[2].trim();
 
             if (key && value) {
-                current.fields[key] = current.fields[key]
-                    ? current.fields[key] + "; " + value
-                    : value;
-                continue;
+                current.fields[key] = value;
             }
-        }
-
-        if (!/^---+$/.test(line)) {
-            current.notes.push(cleanValue(line));
+        } else {
+            current.notes.push(line);
         }
     }
 
-    // Keep separate entries for identically named people.
-    // For example, Enoch (son of Cain) and Enoch (son of Jared).
-    const people = [];
+    // Distinguish people by their full heading, not just a shared first name.
+    const uniquePeople = [];
     const peopleByKey = new Map();
 
-    for (const section of sections) {
-        const key = normalizeName(section.name);
-        if (!key) continue;
+    for (const person of people) {
+        person.key = normalizeName(person.name);
 
-        if (!peopleByKey.has(key)) {
-            const person = {
-                ...section,
-                key,
-                parents: []
-            };
-
-            peopleByKey.set(key, person);
-            people.push(person);
+        if (!peopleByKey.has(person.key)) {
+            peopleByKey.set(person.key, person);
+            uniquePeople.push(person);
         } else {
-            const existing = peopleByKey.get(key);
-            Object.assign(existing.fields, section.fields);
-            existing.notes.push(...section.notes);
+            Object.assign(
+                peopleByKey.get(person.key).fields,
+                person.fields
+            );
         }
     }
 
-    // Resolve both explicitly listed parents and children.
-    for (const person of people) {
-        for (const field of PARENT_FIELDS) {
-            const value = person.fields[field];
-            if (!value) continue;
+    // Connect people using their Parents fields.
+    for (const person of uniquePeople) {
+        const parents = person.fields.parents || person.fields.parent || "";
 
-            for (const parentName of splitNames(value)) {
-                const parentKey = normalizeName(parentName);
+        for (const parentName of splitNames(parents)) {
+            const parentKey = normalizeName(parentName);
 
-                if (parentKey !== person.key &&
-                    peopleByKey.has(parentKey) &&
-                    !person.parents.includes(parentKey)) {
-                    person.parents.push(parentKey);
-                }
+            if (
+                parentKey !== person.key &&
+                peopleByKey.has(parentKey) &&
+                !person.parents.includes(parentKey)
+            ) {
+                person.parents.push(parentKey);
             }
         }
     }
 
-    for (const person of people) {
-        for (const field of CHILD_FIELDS) {
+    // Also connect people using Sons, Daughters, and Children fields.
+    for (const person of uniquePeople) {
+        for (const field of ["sons", "daughters", "children", "child"]) {
             const value = person.fields[field];
             if (!value) continue;
 
             for (const childName of splitNames(value)) {
-                const childKey = normalizeName(childName);
-                const child = peopleByKey.get(childKey);
+                const child = peopleByKey.get(normalizeName(childName));
 
-                if (!child || childKey === person.key) continue;
-
-                if (!child.parents.includes(person.key)) {
+                if (
+                    child &&
+                    child.key !== person.key &&
+                    !child.parents.includes(person.key)
+                ) {
                     child.parents.push(person.key);
                 }
             }
         }
     }
 
-    return people;
+    return uniquePeople;
 }
 
 function getField(person, names) {
